@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entourage Invitation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* =====================================================================
+   DESIGN — change the look here. Everything on the page uses these.
+   Layout: one framed invitation card, centered, on a quiet garden-green ground.
+   ===================================================================== */
+:root {
+  --ground: #dfe7df;        /* page background */
+  --paper: #f7f9f5;         /* the card */
+  --ink: #1f3a2e;           /* main text */
+  --ink-soft: #55695e;      /* secondary text */
+  --accent: #a5506a;        /* role question, links, buttons */
+  --rule: #b39a5c;          /* thin frame and divider lines */
+  --field: #ffffff;         /* input background */
+
+  --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --font-body: "Jost", "Avenir Next", "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #101c16; --paper: #182a21; --ink: #e9efe6; --ink-soft: #a6b7ab;
+    --accent: #e39ab0; --rule: #8f7c4b; --field: #122019; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #101c16; --paper: #182a21; --ink: #e9efe6; --ink-soft: #a6b7ab;
+  --accent: #e39ab0; --rule: #8f7c4b; --field: #122019; color-scheme: dark;
+}
+/* ========================= end of DESIGN ========================= */
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 560px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+
+.sample {
+  margin: 0; text-align: center; font-size: 0.72rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  outline: 1px solid var(--rule);
+  outline-offset: -9px;
+  padding: 48px 32px 40px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  animation: settle 0.7s ease-out both;
+}
+@keyframes settle { from { transform: translateY(8px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+.monogram {
+  width: 76px; height: 76px; border-radius: 50%;
+  border: 1px solid var(--rule);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-style: italic; font-size: 1.7rem; color: var(--ink);
+}
+.eyebrow {
+  margin: 0; font-size: 0.74rem; font-weight: 400; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wrap: balance; }
+.couple { font-size: clamp(2.3rem, 9vw, 3.2rem); line-height: 1.05; }
+.couple em { font-size: 0.6em; color: var(--rule); padding-inline: 0.15em; }
+.ask { font-style: italic; font-size: clamp(2.1rem, 8.5vw, 3rem); line-height: 1.1; color: var(--accent); }
+.lead { margin: 0; max-width: 34ch; color: var(--ink-soft); }
+.note { margin: 0; max-width: 38ch; font-family: var(--font-display); font-size: 1.3rem; line-height: 1.45; }
+.sign { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 1.35rem; }
+
+.rule { width: 72px; height: 1px; background: var(--rule); border: 0; margin: 6px 0; }
+
+.details { margin: 0; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 22px 16px; }
+.details div { min-width: 0; }
+.details dt {
+  font-size: 0.7rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-soft); margin-bottom: 4px;
+}
+.details dd { margin: 0; font-family: var(--font-display); font-size: 1.22rem; line-height: 1.3; }
+.details dd small { display: block; font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-soft); }
+.details .wide { grid-column: 1 / -1; }
+.swatch {
+  display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%;
+  border: 1px solid var(--ink-soft); margin-right: 0.4em; vertical-align: baseline;
+}
+@media (max-width: 420px) {
+  .card { padding: 40px 22px 32px; }
+  .details { grid-template-columns: 1fr; }
+}
+
+/* find-your-invitation form */
+.find { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+.find label { font-size: 0.74rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
+.find input {
+  width: 100%; padding: 12px 14px; font: inherit; font-weight: 400; text-align: center;
+  color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 2px;
+}
+.results { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.results button, .btn {
+  font: inherit; font-weight: 400; cursor: pointer; padding: 11px 14px; border-radius: 2px;
+  background: transparent; color: var(--accent); border: 1px solid var(--accent);
+}
+.results button:hover, .btn:hover { background: var(--accent); color: var(--paper); }
+.hint { margin: 0; font-size: 0.9rem; color: var(--ink-soft); min-height: 1.5em; }
+.linkish {
+  font: inherit; font-size: 0.9rem; background: none; border: 0; padding: 4px; cursor: pointer;
+  color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* host list */
+.host-scroll { width: 100%; overflow-x: auto; }
+.host { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem; }
+.host th {
+  font-size: 0.68rem; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-soft); padding: 6px 8px; border-bottom: 1px solid var(--rule);
+}
+.host td { padding: 9px 8px; border-bottom: 1px solid color-mix(in srgb, var(--rule) 35%, transparent); vertical-align: middle; }
+.host code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; user-select: all; }
+.host .btn { padding: 5px 10px; font-size: 0.8rem; white-space: nowrap; }
+</style>
+
+</head>
+<body>
+<main class="wrap">
+  <p class="sample" id="sample-flag" hidden>Sample template · placeholder names</p>
+
+  <!-- View 1: guest finds their invitation -->
+  <section class="card" id="view-find">
+    <div class="monogram" data-fill="initials"></div>
+    <p class="eyebrow">Together with their families</p>
+    <h1 class="couple" data-fill="couple"></h1>
+    <p class="lead" data-fill="headline"></p>
+    <hr class="rule">
+    <form class="find" id="find-form" autocomplete="off">
+      <label for="guest-name">Type your name to open your invitation</label>
+      <input id="guest-name" type="text" inputmode="text" placeholder="Your name" spellcheck="false">
+    </form>
+    <div class="results" id="results"></div>
+    <p class="hint" id="find-hint"></p>
+  </section>
+
+  <!-- View 2: the personal invitation -->
+  <section class="card" id="view-invite" hidden>
+    <div class="monogram" data-fill="initials"></div>
+    <p class="eyebrow" id="inv-for"></p>
+    <h1 class="ask" id="inv-ask"></h1>
+    <p class="note" id="inv-note"></p>
+    <p class="sign" id="inv-sign"></p>
+    <hr class="rule">
+    <dl class="details">
+      <div><dt>Your role</dt><dd id="inv-role"></dd></div>
+      <div><dt>The date</dt><dd id="inv-date"></dd></div>
+      <div><dt>Ceremony</dt><dd id="inv-ceremony"></dd></div>
+      <div><dt>Reception</dt><dd id="inv-reception"></dd></div>
+      <div class="wide"><dt>What to wear</dt><dd id="inv-attire"></dd></div>
+      <div class="wide"><dt>Kindly reply</dt><dd id="inv-reply"></dd></div>
+    </dl>
+    <button class="linkish" type="button" id="not-me"></button>
+  </section>
+
+  <!-- View 3: private helper for the couple, opened with #host-list -->
+  <section class="card" id="view-host" hidden>
+    <p class="eyebrow">For the couple</p>
+    <h2 class="couple" style="font-size:2rem">Personal link endings</h2>
+    <p class="lead">Add an ending to the end of your invitation link and send it. That guest opens straight to their own role.</p>
+    <div class="host-scroll">
+      <table class="host">
+        <thead><tr><th>Guest</th><th>Role</th><th>Link ending</th><th></th></tr></thead>
+        <tbody id="host-rows"></tbody>
+      </table>
+    </div>
+    <button class="linkish" type="button" id="host-back">Back to the invitation</button>
+  </section>
+</main>
+
+<script>
+/* =====================================================================
+   SETTINGS — change the content here. Nothing below this block
+   needs editing when you reuse the template for another event.
+   ===================================================================== */
+const INVITE = {
+  sample: true,                       // set to false to hide the "Sample template" line
+
+  partner1: "Maria",
+  partner2: "Jose",
+  headline: "are getting married, and there are people they cannot imagine the day without.",
+
+  date: "2027-06-12",                 // year-month-day
+  ceremony:  { time: "3:00 PM", place: "San Agustin Church", area: "Intramuros, Manila" },
+  reception: { time: "6:00 PM", place: "The Garden Pavilion", area: "Intramuros, Manila" },
+
+  replyBy: "2027-03-31",
+  replyHow: "Message Maria or Jose directly",
+
+  // One entry per role. "from" is who is asking. "color" is the attire color shown as a dot.
+  roles: {
+    "maid-of-honor": { title: "Maid of Honor", ask: "Will you be my maid of honor?", from: "Maria",
+                       note: "You have stood beside me through everything. Please stand beside me on this day too.",
+                       attire: "Long gown in dusty rose", color: "#c98a9b" },
+    "best-man":      { title: "Best Man", ask: "Will you be my best man?", from: "Jose",
+                       note: "There is no one I trust more to stand next to me at the altar.",
+                       attire: "Charcoal suit, dusty rose tie", color: "#4a4f55" },
+    "bridesmaid":    { title: "Bridesmaid", ask: "Will you be my bridesmaid?", from: "Maria",
+                       note: "My day would not feel complete without you by my side.",
+                       attire: "Long gown in sage green", color: "#9db59a" },
+    "groomsman":     { title: "Groomsman", ask: "Will you be my groomsman?", from: "Jose",
+                       note: "You have always had my back. I would be honored to have you with me.",
+                       attire: "Charcoal suit, sage green tie", color: "#4a4f55" },
+    "flower-girl":   { title: "Flower Girl", ask: "Will you be our flower girl?", from: "Maria & Jose",
+                       note: "We need someone very special to scatter petals down the aisle. We thought of you.",
+                       attire: "White dress with a flower crown", color: "#ffffff" },
+    "flower-boy":    { title: "Flower Boy", ask: "Will you be our flower boy?", from: "Maria & Jose",
+                       note: "We need someone very special to walk down the aisle with the flowers. We thought of you.",
+                       attire: "White shirt, khaki trousers, suspenders", color: "#c9b48c" },
+    "ring-bearer":   { title: "Ring Bearer", ask: "Will you be our ring bearer?", from: "Maria & Jose",
+                       note: "We have a very important job, and only you can do it: keeping our rings safe.",
+                       attire: "White shirt, khaki trousers, suspenders", color: "#c9b48c" }
+  },
+
+  // One entry per person. "role" must match a name in the roles list above.
+  // Add an optional personal "note" to replace the role's standard message.
+  guests: [
+    { name: "Ana Reyes",        role: "maid-of-honor", note: "From our first day of college to this. I cannot do it without you, Ana." },
+    { name: "Miguel Santos",    role: "best-man" },
+    { name: "Bea Cruz",         role: "bridesmaid" },
+    { name: "Carla Mendoza",    role: "bridesmaid" },
+    { name: "Paolo Garcia",     role: "groomsman" },
+    { name: "Rico Dela Cruz",   role: "groomsman" },
+    { name: "Sofia Reyes",      role: "flower-girl" },
+    { name: "Lucas Santos",     role: "flower-boy" },
+    { name: "Enzo Mendoza",     role: "ring-bearer" }
+  ]
+};
+/* ========================= end of SETTINGS ========================= */
+
+const $ = (id) => document.getElementById(id);
+const plain = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const slug = (s) => plain(s).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+const firstName = (s) => s.trim().split(/\s+/)[0];
+
+function longDate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US",
+    { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+const guests = INVITE.guests.map((g) => ({ ...g, slug: slug(g.name), key: plain(g.name) }));
+
+// shared header pieces
+document.querySelectorAll('[data-fill="initials"]').forEach((el) => {
+  el.textContent = INVITE.partner1[0] + " & " + INVITE.partner2[0];
+});
+document.querySelectorAll('[data-fill="couple"]').forEach((el) => {
+  el.append(INVITE.partner1, Object.assign(document.createElement("em"), { textContent: " & " }), INVITE.partner2);
+});
+document.querySelectorAll('[data-fill="headline"]').forEach((el) => { el.textContent = INVITE.headline; });
+$("sample-flag").hidden = !INVITE.sample;
+
+function venue(el, v) {
+  el.textContent = v.place;
+  el.append(Object.assign(document.createElement("small"), { textContent: v.time + " · " + v.area }));
+}
+
+function showInvite(g) {
+  const r = INVITE.roles[g.role];
+  $("inv-for").textContent = "For " + g.name;
+  $("inv-ask").textContent = r.ask;
+  $("inv-note").textContent = g.note || r.note;
+  $("inv-sign").textContent = "With love, " + r.from;
+  $("inv-role").textContent = r.title;
+  $("inv-date").textContent = longDate(INVITE.date);
+  venue($("inv-ceremony"), INVITE.ceremony);
+  venue($("inv-reception"), INVITE.reception);
+  const attire = $("inv-attire");
+  attire.textContent = "";
+  const dot = document.createElement("span");
+  dot.className = "swatch";
+  dot.style.background = r.color;
+  attire.append(dot, r.attire);
+  const reply = $("inv-reply");
+  reply.textContent = "By " + longDate(INVITE.replyBy);
+  reply.append(Object.assign(document.createElement("small"), { textContent: INVITE.replyHow }));
+  $("not-me").textContent = "Not " + firstName(g.name) + "? Find your invitation";
+  document.title = r.title + " Invitation";
+}
+
+function showHost() {
+  const rows = $("host-rows");
+  rows.textContent = "";
+  guests.forEach((g) => {
+    const tr = document.createElement("tr");
+    const code = Object.assign(document.createElement("code"), { textContent: "#" + g.slug });
+    const btn = Object.assign(document.createElement("button"), { className: "btn", type: "button", textContent: "Copy" });
+    btn.addEventListener("click", () => {
+      const done = () => { btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy"), 1500); };
+      const fallback = () => { getSelection().selectAllChildren(code); btn.textContent = "Selected"; };
+      try { navigator.clipboard.writeText("#" + g.slug).then(done, fallback); } catch (e) { fallback(); }
+    });
+    [g.name, (INVITE.roles[g.role] || {}).title || g.role, code, btn].forEach((c) => {
+      const td = document.createElement("td");
+      td.append(c);
+      tr.append(td);
+    });
+    rows.append(tr);
+  });
+}
+
+function route() {
+  const h = decodeURIComponent(location.hash.replace(/^#/, "")).toLowerCase();
+  const g = guests.find((x) => x.slug === h && INVITE.roles[x.role]);
+  const host = h === "host-list";
+  if (g) showInvite(g);
+  if (host) showHost();
+  if (!g) document.title = "Entourage Invitation";
+  $("view-invite").hidden = !g;
+  $("view-host").hidden = !host;
+  $("view-find").hidden = !!g || host;
+  if (g || host) window.scrollTo(0, 0);
+}
+
+// name search
+const input = $("guest-name");
+function search() {
+  const q = plain(input.value);
+  const box = $("results");
+  box.textContent = "";
+  $("find-hint").textContent = "";
+  if (q.length < 2) return;
+  const found = guests.filter((g) => g.key.includes(q) && INVITE.roles[g.role]).slice(0, 5);
+  if (!found.length) {
+    $("find-hint").textContent = "We could not find that name. Check the spelling, or message " +
+      INVITE.partner1 + " or " + INVITE.partner2 + ".";
+    return;
+  }
+  found.forEach((g) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: "Open invitation for " + g.name });
+    b.addEventListener("click", () => { location.hash = g.slug; });
+    box.append(b);
+  });
+}
+input.addEventListener("input", search);
+$("find-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const only = $("results").querySelectorAll("button");
+  if (only.length === 1) only[0].click();
+});
+const home = () => { input.value = ""; search(); location.hash = ""; };
+$("not-me").addEventListener("click", home);
+$("host-back").addEventListener("click", home);
+
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
