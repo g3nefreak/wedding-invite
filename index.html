@@ -4,41 +4,47 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Entourage Invitation</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=Jost:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap">
 <style>
 /* =====================================================================
-   DESIGN — change the look here. Everything on the page uses these.
-   Layout: one framed invitation card, centered, on a quiet garden-green ground.
+   DESIGN — four templates. Pick one in SETTINGS with  template: "..."
+   To restyle a template, change its colors and fonts here.
    ===================================================================== */
-:root {
-  --ground: #dfe7df;        /* page background */
-  --paper: #f7f9f5;         /* the card */
-  --ink: #1f3a2e;           /* main text */
-  --ink-soft: #55695e;      /* secondary text */
-  --accent: #a5506a;        /* role question, links, buttons */
-  --rule: #b39a5c;          /* thin frame and divider lines */
-  --field: #ffffff;         /* input background */
 
+/* 1. "garden" — sage green and dusty rose, framed card, leaf background */
+:root {
+  --ground: #dfe7df;  --paper: #f7f9f5;  --ink: #1f3a2e;  --ink-soft: #55695e;
+  --accent: #a5506a;  --rule: #b39a5c;   --field: #ffffff;
   --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --font-body: "Jost", "Avenir Next", "Segoe UI", sans-serif;
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ground: #101c16; --paper: #182a21; --ink: #e9efe6; --ink-soft: #a6b7ab;
-    --accent: #e39ab0; --rule: #8f7c4b; --field: #122019; color-scheme: dark;
-  }
+/* 2. "midnight" — navy and gold, formal, starry background */
+:root[data-template="midnight"] {
+  --ground: #0b1330;  --paper: #111c44;  --ink: #f1ead8;  --ink-soft: #b3b6c8;
+  --accent: #e3c577;  --rule: #c4a557;   --field: #0b1330;
+  --font-display: "Playfair Display", Georgia, serif;
+  color-scheme: dark;
 }
-:root[data-theme="dark"] {
-  --ground: #101c16; --paper: #182a21; --ink: #e9efe6; --ink-soft: #a6b7ab;
-  --accent: #e39ab0; --rule: #8f7c4b; --field: #122019; color-scheme: dark;
+/* 3. "sunset" — peach and terracotta, arched card, sun and hills background */
+:root[data-template="sunset"] {
+  --ground: #f0b592;  --paper: #fff6ea;  --ink: #4a2318;  --ink-soft: #85574a;
+  --accent: #b5492c;  --rule: #d99a6c;   --field: #ffffff;
+  --font-display: "Fraunces", Georgia, serif;
+}
+/* 4. "minimal" — black and white, left aligned, large bold type */
+:root[data-template="minimal"] {
+  --ground: #ecece8;  --paper: #ffffff;  --ink: #141414;  --ink-soft: #5c5c58;
+  --accent: #141414;  --rule: #141414;   --field: #f4f4f1;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
 }
 /* ========================= end of DESIGN ========================= */
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+html { background: var(--ground); }
 body {
   margin: 0;
-  background: var(--ground);
   color: var(--ink);
   font-family: var(--font-body);
   font-weight: 300;
@@ -48,15 +54,26 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+/* background image, fixed behind the page */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2;
+  background: var(--ground) var(--bg-image, none) center / cover no-repeat;
+}
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -1;
+  background: var(--ground); opacity: var(--bg-tint, 0);
+}
 .wrap { max-width: 560px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
 
 .sample {
-  margin: 0; text-align: center; font-size: 0.72rem; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--ink-soft);
+  margin: 0 auto; padding: 4px 14px; border-radius: 99px; background: var(--paper);
+  font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft);
 }
 
 .card {
-  background: var(--paper);
+  /* lower the 86% to let more of the background show through the card */
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border: 1px solid var(--rule);
   outline: 1px solid var(--rule);
   outline-offset: -9px;
@@ -69,10 +86,10 @@ body {
 @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
 
 .monogram {
-  width: 76px; height: 76px; border-radius: 50%;
+  width: 76px; height: 76px; border-radius: 50%; flex: none;
   border: 1px solid var(--rule);
   display: grid; place-items: center;
-  font-family: var(--font-display); font-style: italic; font-size: 1.7rem; color: var(--ink);
+  font-family: var(--font-display); font-style: italic; font-size: 1.6rem; color: var(--ink);
 }
 .eyebrow {
   margin: 0; font-size: 0.74rem; font-weight: 400; letter-spacing: 0.22em;
@@ -81,16 +98,16 @@ body {
 h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wrap: balance; }
 .couple { font-size: clamp(2.3rem, 9vw, 3.2rem); line-height: 1.05; }
 .couple em { font-size: 0.6em; color: var(--rule); padding-inline: 0.15em; }
+.couple.small { font-size: 2rem; }
 .ask { font-style: italic; font-size: clamp(2.1rem, 8.5vw, 3rem); line-height: 1.1; color: var(--accent); }
 .lead { margin: 0; max-width: 34ch; color: var(--ink-soft); }
 .note { margin: 0; max-width: 38ch; font-family: var(--font-display); font-size: 1.3rem; line-height: 1.45; }
 .sign { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 1.35rem; }
-
-.rule { width: 72px; height: 1px; background: var(--rule); border: 0; margin: 6px 0; }
+.rule { width: 72px; height: 1px; background: var(--rule); border: 0; margin: 6px 0; flex: none; }
 
 .details { margin: 0; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 22px 16px; }
 .details div { min-width: 0; }
-.details dt {
+.details dt, .label {
   font-size: 0.7rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--ink-soft); margin-bottom: 4px;
 }
@@ -99,32 +116,37 @@ h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wra
 .details .wide { grid-column: 1 / -1; }
 .swatch {
   display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%;
-  border: 1px solid var(--ink-soft); margin-right: 0.4em; vertical-align: baseline;
-}
-@media (max-width: 420px) {
-  .card { padding: 40px 22px 32px; }
-  .details { grid-template-columns: 1fr; }
+  border: 1px solid var(--ink-soft); margin-right: 0.4em;
 }
 
-/* find-your-invitation form */
-.find { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
-.find label { font-size: 0.74rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
-.find input {
-  width: 100%; padding: 12px 14px; font: inherit; font-weight: 400; text-align: center;
+/* inputs and buttons */
+.find, .rsvp { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
+.find label, .rsvp label { margin: 0; font-size: 0.74rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
+input[type="text"], textarea {
+  width: 100%; padding: 12px 14px; font: inherit; font-weight: 400;
   color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 2px;
 }
-.results { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-.results button, .btn {
+.find input { text-align: center; }
+textarea { resize: vertical; min-height: 84px; }
+.results { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 8px; }
+.btn {
   font: inherit; font-weight: 400; cursor: pointer; padding: 11px 14px; border-radius: 2px;
   background: transparent; color: var(--accent); border: 1px solid var(--accent);
 }
-.results button:hover, .btn:hover { background: var(--accent); color: var(--paper); }
+.btn:hover, .btn[aria-pressed="true"], .btn.solid { background: var(--accent); color: var(--paper); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .hint { margin: 0; font-size: 0.9rem; color: var(--ink-soft); min-height: 1.5em; }
 .linkish {
   font: inherit; font-size: 0.9rem; background: none; border: 0; padding: 4px; cursor: pointer;
   color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px;
 }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* RSVP */
+.rsvp { padding-top: 6px; }
+.rsvp h2 { font-size: 1.7rem; font-style: italic; }
+.choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rsvp .hint { font-size: 0.95rem; color: var(--ink); }
 
 /* host list */
 .host-scroll { width: 100%; overflow-x: auto; }
@@ -136,8 +158,44 @@ h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wra
 .host td { padding: 9px 8px; border-bottom: 1px solid color-mix(in srgb, var(--rule) 35%, transparent); vertical-align: middle; }
 .host code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; user-select: all; }
 .host .btn { padding: 5px 10px; font-size: 0.8rem; white-space: nowrap; }
-</style>
+.looks { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.looks .btn { padding: 6px 12px; font-size: 0.85rem; }
 
+@media (max-width: 420px) {
+  .card { padding: 40px 22px 32px; }
+  .details { grid-template-columns: 1fr; }
+}
+
+/* ---------- template shapes ---------- */
+
+/* midnight: wide letter-spaced names */
+[data-template="midnight"] .couple { text-transform: uppercase; letter-spacing: 0.12em; font-size: clamp(1.7rem, 7vw, 2.4rem); line-height: 1.25; }
+[data-template="midnight"] .couple em { text-transform: none; letter-spacing: 0; font-style: italic; }
+
+/* sunset: arched card, no inner frame */
+[data-template="sunset"] .card {
+  border: 0; outline: 0; border-radius: 280px 280px 14px 14px; padding-top: 84px;
+  box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--ink) 55%, transparent);
+}
+[data-template="sunset"] #view-host { border-radius: 14px; padding-top: 44px; }
+[data-template="sunset"] .monogram { background: var(--accent); color: var(--paper); border: 0; }
+[data-template="sunset"] .btn, [data-template="sunset"] input[type="text"] { border-radius: 99px; }
+[data-template="sunset"] textarea { border-radius: 16px; }
+@media (max-width: 420px) { [data-template="sunset"] .card { padding-top: 72px; } }
+
+/* minimal: left aligned, bold uppercase, no frame */
+[data-template="minimal"] .card { border: 0; outline: 0; text-align: left; align-items: flex-start; border-top: 6px solid var(--ink); }
+[data-template="minimal"] .monogram { border-radius: 0; width: auto; height: auto; padding: 4px 10px; font-style: normal; font-weight: 700; font-size: 1rem; border-width: 2px; }
+[data-template="minimal"] h1, [data-template="minimal"] h2 { font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; }
+[data-template="minimal"] .ask, [data-template="minimal"] .rsvp h2 { font-style: normal; }
+[data-template="minimal"] .couple em { color: var(--ink-soft); font-style: normal; font-weight: 500; }
+[data-template="minimal"] .note, [data-template="minimal"] .sign, [data-template="minimal"] .details dd { font-family: var(--font-body); font-weight: 400; font-style: normal; font-size: 1.05rem; }
+[data-template="minimal"] .rule { width: 100%; }
+[data-template="minimal"] .details div { border-top: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); padding-top: 10px; }
+[data-template="minimal"] .find, [data-template="minimal"] .results, [data-template="minimal"] .rsvp { max-width: none; }
+[data-template="minimal"] .find input { text-align: left; }
+[data-template="minimal"] .looks { justify-content: flex-start; }
+</style>
 </head>
 <body>
 <main class="wrap">
@@ -152,7 +210,7 @@ h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wra
     <hr class="rule">
     <form class="find" id="find-form" autocomplete="off">
       <label for="guest-name">Type your name to open your invitation</label>
-      <input id="guest-name" type="text" inputmode="text" placeholder="Your name" spellcheck="false">
+      <input id="guest-name" type="text" placeholder="Your name" spellcheck="false">
     </form>
     <div class="results" id="results"></div>
     <p class="hint" id="find-hint"></p>
@@ -174,20 +232,40 @@ h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wra
       <div class="wide"><dt>What to wear</dt><dd id="inv-attire"></dd></div>
       <div class="wide"><dt>Kindly reply</dt><dd id="inv-reply"></dd></div>
     </dl>
+    <hr class="rule">
+
+    <!-- the guest's answer -->
+    <div class="rsvp" id="rsvp">
+      <h2>Will you be there?</h2>
+      <div class="choice">
+        <button class="btn" type="button" id="rsvp-yes" aria-pressed="false">Yes, I'll be there</button>
+        <button class="btn" type="button" id="rsvp-no" aria-pressed="false">Sorry, I can't</button>
+      </div>
+      <label for="rsvp-message">A short message (optional)</label>
+      <textarea id="rsvp-message" maxlength="300" rows="3"></textarea>
+      <button class="btn solid" type="button" id="rsvp-send" disabled>Send my reply</button>
+      <p class="hint" id="rsvp-status" aria-live="polite"></p>
+    </div>
+
     <button class="linkish" type="button" id="not-me"></button>
   </section>
 
   <!-- View 3: private helper for the couple, opened with #host-list -->
   <section class="card" id="view-host" hidden>
     <p class="eyebrow">For the couple</p>
-    <h2 class="couple" style="font-size:2rem">Personal link endings</h2>
-    <p class="lead">Add an ending to the end of your invitation link and send it. That guest opens straight to their own role.</p>
+    <h2 class="couple small">Personal links</h2>
+    <p class="lead">Copy a guest's link and send it. It opens straight to their own role.</p>
     <div class="host-scroll">
       <table class="host">
         <thead><tr><th>Guest</th><th>Role</th><th>Link ending</th><th></th></tr></thead>
         <tbody id="host-rows"></tbody>
       </table>
     </div>
+    <p class="hint" id="host-rsvp"></p>
+    <hr class="rule">
+    <p class="label">Preview a template</p>
+    <div class="looks" id="looks"></div>
+    <p class="hint" id="looks-hint">This preview is only for you. To keep a template, set it in SETTINGS.</p>
     <button class="linkish" type="button" id="host-back">Back to the invitation</button>
   </section>
 </main>
@@ -200,6 +278,17 @@ h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 400; text-wra
 const INVITE = {
   sample: true,                       // set to false to hide the "Sample template" line
 
+  template: "midnight",               // "garden", "midnight", "sunset" or "minimal"
+
+  // Your own background photo. Upload the photo to the same GitHub folder as
+  // this file and put its file name here, for example "background.jpg".
+  // Leave it empty ("") to use the template's built-in background.
+  backgroundImage: "",
+
+  // Paste your Google Sheet web app link here to save the guests' replies.
+  // While it is empty, the reply buttons are shown but nothing is saved.
+  rsvpUrl: "",
+
   partner1: "Maria",
   partner2: "Jose",
   headline: "are getting married, and there are people they cannot imagine the day without.",
@@ -209,7 +298,7 @@ const INVITE = {
   reception: { time: "6:00 PM", place: "The Garden Pavilion", area: "Intramuros, Manila" },
 
   replyBy: "2027-03-31",
-  replyHow: "Message Maria or Jose directly",
+  replyHow: "Use the buttons below, or message Maria or Jose",
 
   // One entry per role. "from" is who is asking. "color" is the attire color shown as a dot.
   roles: {
@@ -256,6 +345,7 @@ const $ = (id) => document.getElementById(id);
 const plain = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 const slug = (s) => plain(s).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 const firstName = (s) => s.trim().split(/\s+/)[0];
+const el = (tag, props) => Object.assign(document.createElement(tag), props);
 
 function longDate(iso) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -263,25 +353,86 @@ function longDate(iso) {
     { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 }
 
-const guests = INVITE.guests.map((g) => ({ ...g, slug: slug(g.name), key: plain(g.name) }));
+/* ---------- built-in background pictures, one per template ---------- */
+const TEMPLATES = ["garden", "midnight", "sunset", "minimal"];
+function picture(name) {
+  let seed = 7;
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const W = 1200, H = 1600;
+  let s = "";
+  if (name === "midnight") {
+    s += '<defs><radialGradient id="g" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#22366e"/><stop offset="1" stop-color="#070c22"/></radialGradient><filter id="b"><feGaussianBlur stdDeviation="70"/></filter></defs>';
+    s += '<rect width="1200" height="1600" fill="url(#g)"/><circle cx="600" cy="120" r="260" fill="#c4a557" opacity=".22" filter="url(#b)"/>';
+    for (let i = 0; i < 190; i++)
+      s += `<circle cx="${(r() * W).toFixed(0)}" cy="${(r() * H).toFixed(0)}" r="${(0.6 + r() * 1.9).toFixed(1)}" fill="#f0d78c" opacity="${(0.25 + r() * 0.7).toFixed(2)}"/>`;
+    for (let i = 0; i < 14; i++) {
+      const x = Math.round(r() * W), y = Math.round(r() * H), k = Math.round(7 + r() * 9);
+      s += `<path d="M${x} ${y - k}Q${x} ${y} ${x + k} ${y}Q${x} ${y} ${x} ${y + k}Q${x} ${y} ${x - k} ${y}Q${x} ${y} ${x} ${y - k}Z" fill="#f6e3a6" opacity=".85"/>`;
+    }
+  } else if (name === "sunset") {
+    s += '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9dcbb"/><stop offset=".55" stop-color="#eda57f"/><stop offset="1" stop-color="#c0603f"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="28"/></filter></defs>';
+    s += '<rect width="1200" height="1600" fill="url(#g)"/><circle cx="600" cy="760" r="250" fill="#fff3da" opacity=".9" filter="url(#b)"/>';
+    s += '<path d="M0 1080Q300 940 620 1060T1200 1000V1600H0Z" fill="#cf7550" opacity=".75"/>';
+    s += '<path d="M0 1230Q260 1090 560 1200T1200 1160V1600H0Z" fill="#b2533a" opacity=".85"/>';
+    s += '<path d="M0 1400Q380 1260 760 1380T1200 1350V1600H0Z" fill="#8a3a29"/>';
+  } else if (name === "minimal") {
+    s += '<defs><filter id="b"><feGaussianBlur stdDeviation="90"/></filter></defs><rect width="1200" height="1600" fill="#ecece8"/>';
+    s += '<circle cx="980" cy="260" r="330" fill="#ffffff" filter="url(#b)"/><circle cx="160" cy="1350" r="360" fill="#cfcfc8" filter="url(#b)"/>';
+    for (let i = 1; i <= 16; i++)
+      s += `<circle cx="1200" cy="0" r="${i * 62}" fill="none" stroke="#141414" stroke-width="1" opacity=".1"/>`;
+  } else {
+    s += '<defs><filter id="b"><feGaussianBlur stdDeviation="80"/></filter></defs><rect width="1200" height="1600" fill="#dfe7df"/>';
+    s += '<circle cx="180" cy="220" r="300" fill="#a9c2a6" filter="url(#b)"/><circle cx="1040" cy="520" r="280" fill="#e8c1cb" filter="url(#b)"/>';
+    s += '<circle cx="260" cy="1300" r="320" fill="#f1e6cf" filter="url(#b)"/><circle cx="1000" cy="1420" r="300" fill="#a9c2a6" filter="url(#b)"/>';
+    for (let i = 0; i < 16; i++) {                 // leafy sprigs
+      const x = r() * W, y = r() * H, a = r() * 360, n = 5 + Math.floor(r() * 4);
+      s += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) rotate(${a.toFixed(0)})" opacity="${(0.28 + r() * 0.3).toFixed(2)}">`;
+      s += `<path d="M0 0V${-n * 30 - 14}" stroke="#5f7f62" stroke-width="2" fill="none"/>`;
+      for (let j = 1; j <= n; j++) {
+        const side = j % 2 ? 1 : -1;
+        s += `<ellipse cx="${side * 15}" cy="${-j * 30}" rx="9" ry="21" fill="${j % 3 ? "#6f9070" : "#c98a9b"}" transform="rotate(${side * 38} ${side * 15} ${-j * 30})"/>`;
+      }
+      s += "</g>";
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">${s}</svg>`;
+}
+function applyTemplate(name) {
+  const t = TEMPLATES.includes(name) ? name : "garden";
+  const root = document.documentElement;
+  root.dataset.template = t;
+  if (INVITE.backgroundImage) {
+    root.style.setProperty("--bg-image", 'url("' + encodeURI(INVITE.backgroundImage) + '")');
+    root.style.setProperty("--bg-tint", "0.3");   // softens a photo so the card stays readable
+  } else {
+    root.style.setProperty("--bg-image", 'url("data:image/svg+xml,' + encodeURIComponent(picture(t)) + '")');
+  }
+  return t;
+}
+let activeTemplate = applyTemplate(INVITE.template);
 
-// shared header pieces
-document.querySelectorAll('[data-fill="initials"]').forEach((el) => {
-  el.textContent = INVITE.partner1[0] + " & " + INVITE.partner2[0];
+/* ---------- shared pieces ---------- */
+const guests = INVITE.guests.map((g) => ({ ...g, slug: slug(g.name), key: plain(g.name) }));
+let current = null;
+
+document.querySelectorAll('[data-fill="initials"]').forEach((n) => {
+  n.textContent = INVITE.partner1[0] + " & " + INVITE.partner2[0];
 });
-document.querySelectorAll('[data-fill="couple"]').forEach((el) => {
-  el.append(INVITE.partner1, Object.assign(document.createElement("em"), { textContent: " & " }), INVITE.partner2);
+document.querySelectorAll('[data-fill="couple"]').forEach((n) => {
+  n.append(INVITE.partner1, el("em", { textContent: " & " }), INVITE.partner2);
 });
-document.querySelectorAll('[data-fill="headline"]').forEach((el) => { el.textContent = INVITE.headline; });
+document.querySelectorAll('[data-fill="headline"]').forEach((n) => { n.textContent = INVITE.headline; });
 $("sample-flag").hidden = !INVITE.sample;
 
-function venue(el, v) {
-  el.textContent = v.place;
-  el.append(Object.assign(document.createElement("small"), { textContent: v.time + " · " + v.area }));
+function venue(node, v) {
+  node.textContent = v.place;
+  node.append(el("small", { textContent: v.time + " · " + v.area }));
 }
 
+/* ---------- the personal invitation ---------- */
 function showInvite(g) {
   const r = INVITE.roles[g.role];
+  current = g;
   $("inv-for").textContent = "For " + g.name;
   $("inv-ask").textContent = r.ask;
   $("inv-note").textContent = g.note || r.note;
@@ -292,38 +443,106 @@ function showInvite(g) {
   venue($("inv-reception"), INVITE.reception);
   const attire = $("inv-attire");
   attire.textContent = "";
-  const dot = document.createElement("span");
-  dot.className = "swatch";
+  const dot = el("span", { className: "swatch" });
   dot.style.background = r.color;
   attire.append(dot, r.attire);
   const reply = $("inv-reply");
   reply.textContent = "By " + longDate(INVITE.replyBy);
-  reply.append(Object.assign(document.createElement("small"), { textContent: INVITE.replyHow }));
+  reply.append(el("small", { textContent: INVITE.replyHow }));
   $("not-me").textContent = "Not " + firstName(g.name) + "? Find your invitation";
   document.title = r.title + " Invitation";
+  resetRsvp(g);
 }
 
+/* ---------- the guest's reply ---------- */
+let answer = "";
+const saved = (id) => { try { return JSON.parse(localStorage.getItem("rsvp:" + id)); } catch (e) { return null; } };
+const remember = (id, v) => { try { localStorage.setItem("rsvp:" + id, JSON.stringify(v)); } catch (e) {} };
+
+function setAnswer(v) {
+  answer = v;
+  $("rsvp-yes").setAttribute("aria-pressed", String(v === "Going"));
+  $("rsvp-no").setAttribute("aria-pressed", String(v === "Not going"));
+  $("rsvp-send").disabled = !v;
+}
+function resetRsvp(g) {
+  const before = saved(g.slug);
+  setAnswer(before ? before.answer : "");
+  $("rsvp-message").value = before ? before.message : "";
+  $("rsvp-send").textContent = before ? "Update my reply" : "Send my reply";
+  $("rsvp-status").textContent = before
+    ? "You already replied: " + before.answer.toLowerCase() + ". You can change it and send again."
+    : "";
+}
+$("rsvp-yes").addEventListener("click", () => setAnswer("Going"));
+$("rsvp-no").addEventListener("click", () => setAnswer("Not going"));
+$("rsvp-send").addEventListener("click", () => {
+  if (!current || !answer) return;
+  const g = current, status = $("rsvp-status"), send = $("rsvp-send");
+  const reply = { id: g.slug, name: g.name, role: INVITE.roles[g.role].title,
+                  answer: answer, message: $("rsvp-message").value.trim() };
+  if (!INVITE.rsvpUrl) {
+    status.textContent = "Preview only. Replies are not being saved yet because no Google Sheet is connected.";
+    return;
+  }
+  send.disabled = true;
+  status.textContent = "Sending your reply…";
+  fetch(INVITE.rsvpUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(reply) })
+    .then((res) => res.json())
+    .then((out) => {
+      if (!out.ok) throw new Error(out.error || "not saved");
+      remember(g.slug, { answer: reply.answer, message: reply.message });
+      send.textContent = "Update my reply";
+      status.textContent = reply.answer === "Going"
+        ? "Thank you, " + firstName(g.name) + ". Your reply is saved. We can't wait to see you."
+        : "Thank you for letting us know, " + firstName(g.name) + ". Your reply is saved. You will be missed.";
+    })
+    .catch(() => {
+      status.textContent = "Your reply could not be sent. Check your connection and try again, or message " +
+        INVITE.partner1 + " or " + INVITE.partner2 + ".";
+    })
+    .finally(() => { send.disabled = false; });
+});
+
+/* ---------- the couple's helper ---------- */
 function showHost() {
   const rows = $("host-rows");
   rows.textContent = "";
   guests.forEach((g) => {
-    const tr = document.createElement("tr");
-    const code = Object.assign(document.createElement("code"), { textContent: "#" + g.slug });
-    const btn = Object.assign(document.createElement("button"), { className: "btn", type: "button", textContent: "Copy" });
+    const tr = el("tr", {});
+    const code = el("code", { textContent: "#" + g.slug });
+    const btn = el("button", { className: "btn", type: "button", textContent: "Copy link" });
     btn.addEventListener("click", () => {
-      const done = () => { btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy"), 1500); };
+      const link = location.href.split("#")[0] + "#" + g.slug;
+      const done = () => { btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy link"), 1500); };
       const fallback = () => { getSelection().selectAllChildren(code); btn.textContent = "Selected"; };
-      try { navigator.clipboard.writeText("#" + g.slug).then(done, fallback); } catch (e) { fallback(); }
+      try { navigator.clipboard.writeText(link).then(done, fallback); } catch (e) { fallback(); }
     });
     [g.name, (INVITE.roles[g.role] || {}).title || g.role, code, btn].forEach((c) => {
-      const td = document.createElement("td");
+      const td = el("td", {});
       td.append(c);
       tr.append(td);
     });
     rows.append(tr);
   });
+  $("host-rsvp").textContent = INVITE.rsvpUrl
+    ? "Replies are being sent to your Google Sheet."
+    : "Replies are not being saved yet. Add your Google Sheet link to rsvpUrl in SETTINGS.";
+  const looks = $("looks");
+  looks.textContent = "";
+  TEMPLATES.forEach((t) => {
+    const b = el("button", { className: "btn", type: "button", textContent: t });
+    b.setAttribute("aria-pressed", String(t === activeTemplate));
+    b.addEventListener("click", () => {
+      activeTemplate = applyTemplate(t);
+      showHost();
+      $("looks-hint").textContent = 'Showing "' + t + '". To keep it, set  template: "' + t + '"  in SETTINGS.';
+    });
+    looks.append(b);
+  });
 }
 
+/* ---------- which view to show ---------- */
 function route() {
   const h = decodeURIComponent(location.hash.replace(/^#/, "")).toLowerCase();
   const g = guests.find((x) => x.slug === h && INVITE.roles[x.role]);
@@ -337,7 +556,6 @@ function route() {
   if (g || host) window.scrollTo(0, 0);
 }
 
-// name search
 const input = $("guest-name");
 function search() {
   const q = plain(input.value);
@@ -352,7 +570,7 @@ function search() {
     return;
   }
   found.forEach((g) => {
-    const b = Object.assign(document.createElement("button"), { type: "button", textContent: "Open invitation for " + g.name });
+    const b = el("button", { className: "btn", type: "button", textContent: "Open invitation for " + g.name });
     b.addEventListener("click", () => { location.hash = g.slug; });
     box.append(b);
   });
