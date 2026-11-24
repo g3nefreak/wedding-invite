@@ -1,4 +1,17 @@
 import type {
+  EventRecord,
+  EventRepository,
+} from '#/server/repositories/event.repository'
+import type {
+  RoleRecord,
+  RoleRepository,
+} from '#/server/repositories/role.repository'
+import type { UserRepository } from '#/server/repositories/user.repository'
+import type {
+  GuestRecord,
+  GuestRepository,
+} from '#/server/repositories/guest.repository'
+import type {
   InviteRecord,
   InviteRepository,
 } from '#/server/repositories/invite.repository'
@@ -72,6 +85,141 @@ export function sampleRecords(): Record<string, InviteRecord> {
         title: 'Still a draft',
         status: 'draft',
       },
+    },
+  }
+}
+
+// ---- Events ----
+
+export const OWNER = '11111111-1111-4111-8111-111111111111'
+export const STRANGER = '22222222-2222-4222-8222-222222222222'
+
+// Stands in for the Event table. Ids are counted up as valid UUIDs.
+export function fakeEventRepository(): EventRepository & {
+  rows: EventRecord[]
+} {
+  const rows: EventRecord[] = []
+  let next = 1
+
+  return {
+    rows,
+    async listByOwner(ownerId) {
+      return rows.filter((row) => row.ownerId === ownerId)
+    },
+    async findById(id) {
+      return rows.find((row) => row.id === id) ?? null
+    },
+    async create(data) {
+      const id = `aaaaaaaa-aaaa-4aaa-8aaa-${String(next++).padStart(12, '0')}`
+      const row: EventRecord = {
+        ...data,
+        id,
+        timezone: 'Asia/Manila',
+        status: 'draft',
+        details: {},
+        design: {},
+      }
+      rows.push(row)
+      return row
+    },
+    async update(id, data) {
+      const row = rows.find((candidate) => candidate.id === id)!
+      // Like Prisma, a field left undefined is not changed.
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) Object.assign(row, { [key]: value })
+      }
+      return row
+    },
+    async delete(id) {
+      rows.splice(
+        rows.findIndex((row) => row.id === id),
+        1,
+      )
+    },
+  }
+}
+
+export function fakeUserRepository(): UserRepository {
+  return { upsert: async (user) => user }
+}
+
+// ---- Roles ----
+
+export function fakeRoleRepository(): RoleRepository & { rows: RoleRecord[] } {
+  const rows: RoleRecord[] = []
+  let next = 1
+
+  return {
+    rows,
+    async listByEvent(eventId) {
+      return rows.filter((row) => row.eventId === eventId)
+    },
+    async findById(id) {
+      return rows.find((row) => row.id === id) ?? null
+    },
+    async create(eventId, data) {
+      const id = `bbbbbbbb-bbbb-4bbb-8bbb-${String(next++).padStart(12, '0')}`
+      const row = { id, eventId, ...data }
+      rows.push(row)
+      return row
+    },
+    async update(id, data) {
+      const row = rows.find((candidate) => candidate.id === id)!
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) Object.assign(row, { [key]: value })
+      }
+      return row
+    },
+    async delete(id) {
+      rows.splice(
+        rows.findIndex((row) => row.id === id),
+        1,
+      )
+    },
+  }
+}
+
+// ---- Guests ----
+
+export function fakeGuestRepository(): GuestRepository & {
+  rows: GuestRecord[]
+} {
+  const rows: GuestRecord[] = []
+  let next = 1
+
+  return {
+    rows,
+    async listByEvent(eventId) {
+      return rows.filter((row) => row.eventId === eventId)
+    },
+    async countByEvent(eventId) {
+      return rows.filter((row) => row.eventId === eventId).length
+    },
+    async findById(id) {
+      return rows.find((row) => row.id === id) ?? null
+    },
+    async createMany(eventId, guests) {
+      const created = guests.map((guest) => ({
+        id: `cccccccc-cccc-4ccc-8ccc-${String(next++).padStart(12, '0')}`,
+        eventId,
+        ...guest,
+        rsvp: null,
+      }))
+      rows.push(...created)
+      return created
+    },
+    async update(id, data) {
+      const row = rows.find((candidate) => candidate.id === id)!
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) Object.assign(row, { [key]: value })
+      }
+      return row
+    },
+    async delete(id) {
+      rows.splice(
+        rows.findIndex((row) => row.id === id),
+        1,
+      )
     },
   }
 }

@@ -14,7 +14,12 @@ export const artDeco: Theme = {
     accent: '#d9b86c',
     buttonInk: '#0b0c10',
   },
-  fontPairs: [{ display: 'Poiret One', body: 'Space Grotesk' }],
+  accents: ['#d9b86c', '#e9e2cf', '#9fc7c2', '#e3a08a'],
+  fontPairs: [
+    { display: 'Poiret One', body: 'Space Grotesk' },
+    { display: 'Italiana', body: 'Jost' },
+    { display: 'Bodoni Moda', body: 'Jost' },
+  ],
   labelFont: 'Space Mono',
   art: 'deco-fan',
   panelRadius: 6,

@@ -14,7 +14,12 @@ export const blackAndWhite: Theme = {
     accent: '#ffffff',
     buttonInk: '#0b0b0b',
   },
-  fontPairs: [{ display: 'Bodoni Moda', body: 'Space Grotesk' }],
+  accents: ['#ffffff', '#e8c9a0', '#b9d6f2', '#f2b8c6'],
+  fontPairs: [
+    { display: 'Bodoni Moda', body: 'Space Grotesk' },
+    { display: 'Cormorant Garamond', body: 'Jost' },
+    { display: 'Italiana', body: 'Jost' },
+  ],
   labelFont: 'Space Mono',
   art: 'photo',
   panelRadius: 28,

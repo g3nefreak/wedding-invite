@@ -1,5 +1,3 @@
-import { EVENT_TYPES } from '#/server/config/event-types'
-import type { EventTypeKey } from '#/server/config/event-types'
 import { readWeddingDetails } from '#/server/validation/details.schema'
 import { designVariables, formatDay } from '../invite.helpers'
 import type { InviteView } from '../invite.types'
@@ -9,20 +7,17 @@ import { ThemeArt } from './ThemeArt'
 const LABEL =
   '[font-family:var(--font-label)] text-xs uppercase tracking-[0.14em] text-ink-soft'
 
-function eventTypeName(type: string): string {
-  return Object.hasOwn(EVENT_TYPES, type)
-    ? EVENT_TYPES[type as EventTypeKey].name
-    : 'Event'
-}
-
 // One guest's invitation. All names, notes and messages are rendered as plain
 // text; nothing here is ever inserted as HTML.
 export function InviteScreen({
   invite,
   token,
+  preview = false,
 }: {
   invite: InviteView
   token: string
+  // True inside the host's design preview: drawn in a box, not as the page.
+  preview?: boolean
 }) {
   const { design, event, role } = invite
   const details = readWeddingDetails(event.details)
@@ -43,22 +38,33 @@ export function InviteScreen({
     { label: 'Reply by', value: formatDay(event.replyBy) },
   ].filter((fact) => !!fact)
 
+  // The preview sits inside the dashboard's own <main>, so it is a <div>.
+  const Root = preview ? 'div' : 'main'
+
   return (
-    <main
+    <Root
       style={{
         ...designVariables(design),
         // Corners inside the panel follow its curve: outer radius minus padding.
         ['--inner-radius' as string]: `${Math.max(design.panelRadius - 20, 4)}px`,
       }}
-      className="relative isolate flex min-h-dvh flex-1 flex-col overflow-hidden bg-ground text-ink [font-family:var(--font-body)]"
+      className={`relative isolate flex flex-1 flex-col overflow-clip bg-ground text-ink [font-family:var(--font-body)] ${preview ? '' : 'min-h-dvh'}`}
     >
-      <ThemeArt art={design.art} />
+      {invite.backgroundUrl ? (
+        <BackgroundPhoto
+          url={invite.backgroundUrl}
+          design={design}
+          preview={preview}
+        />
+      ) : (
+        <ThemeArt art={design.art} />
+      )}
 
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-5 py-6 sm:px-8 sm:py-10">
         <p
           className={`${LABEL} flex flex-wrap justify-between gap-x-6 gap-y-1`}
         >
-          <span>{eventTypeName(event.type)} invitation</span>
+          <span>{event.typeName} invitation</span>
           <span>{formatDay(event.eventDate)}</span>
         </p>
 
@@ -118,6 +124,46 @@ export function InviteScreen({
           />
         </section>
       </div>
-    </main>
+    </Root>
+  )
+}
+
+// The host's own photo behind the invitation, with the theme's treatment and
+// a layer of the theme's background color on top so the text stays readable.
+//
+// The photo fills one screen and stays put while the invitation scrolls over
+// it. Stretching it over the whole (much taller) page instead would zoom in
+// and cut most of the picture away.
+function BackgroundPhoto({
+  url,
+  design,
+  preview,
+}: {
+  url: string
+  design: InviteView['design']
+  preview: boolean
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 -z-10"
+    >
+      {/* In the design preview "one screen" is the preview box, not the window. */}
+      <div className={`sticky top-0 ${preview ? 'h-[70vh]' : 'h-lvh'}`}>
+        {/* A plain <img>: the photo is already resized on our server, and it
+            is decoration, so it has an empty alt. Faces are usually in the
+            upper part of a photo, so that part is kept when it must be cut. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt=""
+          className={`h-full w-full object-cover object-[center_30%] ${design.photo.filter === 'grayscale' ? 'grayscale' : ''}`}
+        />
+        <div
+          className="absolute inset-0 bg-ground"
+          style={{ opacity: design.photo.overlay }}
+        />
+      </div>
+    </div>
   )
 }

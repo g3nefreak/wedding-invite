@@ -3,22 +3,13 @@ import {
   clientIp,
   createRateLimiter,
 } from '#/server/auth/rate-limit'
-import { AppError } from '#/server/errors'
-import { handle, ok } from '#/server/http'
+import { handle, ok, readJson } from '#/server/http'
 import { prismaInviteRepository } from '#/server/repositories/invite.repository'
 import type { InviteRepository } from '#/server/repositories/invite.repository'
 import { saveRsvp } from '#/server/services/rsvp.service'
 import { rsvpSchema } from '#/server/validation/rsvp.schema'
 
 type Context = { params: Promise<{ token: string }> }
-
-async function readJson(request: Request): Promise<unknown> {
-  try {
-    return await request.json()
-  } catch {
-    throw new AppError('VALIDATION', 'The request body is not valid JSON')
-  }
-}
 
 // Built from a repository so tests can pass a fake one.
 export function makeHandler(repo: InviteRepository) {

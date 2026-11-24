@@ -17,7 +17,13 @@ export class ApiError extends Error {
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      // A file upload (FormData) must set its own content type.
+      ...(typeof init?.body === 'string'
+        ? { 'Content-Type': 'application/json' }
+        : {}),
+      ...init?.headers,
+    },
   })
   const body = (await response.json()) as Envelope<T>
   if (!body.ok) throw new ApiError(body.error.code, body.error.message)

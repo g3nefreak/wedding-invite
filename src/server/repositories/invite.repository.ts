@@ -1,4 +1,5 @@
 import { db } from '#/server/db'
+import { findBackgroundPath } from '#/server/repositories/asset.repository'
 
 export type RsvpAnswer = 'going' | 'not_going'
 
@@ -27,6 +28,8 @@ export type InviteRecord = {
     themeKey: string
     design: unknown
   }
+  // Where the event's background photo is stored, if it has one.
+  backgroundPath?: string | null
 }
 
 // Services receive this instead of touching the database themselves, so
@@ -54,6 +57,7 @@ export const prismaInviteRepository: InviteRepository = {
     // Fields are picked one by one so nothing extra (owner id, other ids,
     // timestamps) can leave this layer by accident.
     return {
+      backgroundPath: await findBackgroundPath(event.design),
       guest: {
         id: guest.id,
         name: guest.name,

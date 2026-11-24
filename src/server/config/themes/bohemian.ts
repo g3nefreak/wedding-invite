@@ -14,7 +14,12 @@ export const bohemian: Theme = {
     accent: '#a4502d',
     buttonInk: '#fff7ec',
   },
-  fontPairs: [{ display: 'Italiana', body: 'Space Grotesk' }],
+  accents: ['#a4502d', '#7a5c2e', '#5b6b3a', '#8a3f55'],
+  fontPairs: [
+    { display: 'Italiana', body: 'Space Grotesk' },
+    { display: 'Cormorant Garamond', body: 'Jost' },
+    { display: 'Poiret One', body: 'Jost' },
+  ],
   labelFont: 'Space Mono',
   art: 'orbit-sun',
   panelRadius: 28,

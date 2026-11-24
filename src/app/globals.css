@@ -12,3 +12,58 @@
   --color-accent: var(--accent);
   --color-button-ink: var(--button-ink);
 }
+
+/* Colors for the host side (login and dashboard): dark and elegant, built
+   on the taupe from Gene's palette. Named by what they are used for. */
+@theme {
+  --color-host-ground: #241b13; /* page background, a deep taupe */
+  --color-host-panel: #2f241a; /* raised surfaces: picture side, inputs, cards */
+  --color-host-ink: #f3ead9; /* main text, a soft cream */
+  --color-host-ink-soft: #c9bda8; /* secondary text */
+  --color-host-line: #8f7f69; /* borders and dividers */
+  --color-host-accent: #c9a86a; /* muted gold: the main button and highlights */
+  --color-host-accent-ink: #241b13; /* text on gold */
+}
+
+/* Fonts for the host side. `inline` so the classes point straight at the
+   fonts loaded in app/fonts.ts. */
+@theme inline {
+  --font-host-body: var(--font-jost), system-ui, sans-serif;
+  --font-host-display: var(--font-cormorant-garamond), Georgia, serif;
+}
+
+/* Login page: the invitation card rises out of its envelope once, on load.
+   The hidden start lives in the keyframe, so without animation (reduced
+   motion) the card simply sits in its final place. */
+@keyframes card-rise {
+  from {
+    transform: translateY(70px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card-rise {
+    animation: card-rise 900ms cubic-bezier(0.2, 0, 0, 1) 150ms both;
+  }
+}
+
+/* Dropdowns on the host side: the browser's own arrow is replaced by a gold
+   chevron with room around it, and the open list uses the dark colors too. */
+.host-select {
+  appearance: none;
+  padding-inline-end: 3rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9a86a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+  cursor: pointer;
+}
+
+[dir='rtl'] .host-select {
+  background-position: left 1rem center;
+}
+
+.host-select option {
+  background-color: var(--color-host-panel);
+  color: var(--color-host-ink);
+}

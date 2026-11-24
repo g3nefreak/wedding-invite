@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { InviteScreen } from '#/features/invite'
 import { AppError } from '#/server/errors'
@@ -8,6 +9,9 @@ import { getInvite } from '#/server/services/invite.service'
 type Props = { params: Promise<{ token: string }> }
 
 async function Invitation({ params }: Props) {
+  // Each guest's page reads the clock and the database, so it is built fresh
+  // on every visit.
+  await connection()
   const { token } = await params
 
   const invite = await getInvite(

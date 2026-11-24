@@ -18,6 +18,9 @@ export type Theme = {
   category: string
   eventTypes: EventTypeKey[]
   palette: Palette
+  // Ready-made accent colors a host can pick. The first is the theme's own.
+  // Each must keep `palette.buttonInk` readable on top of it.
+  accents: string[]
   // The first pair is the default. A host can only pick from this list.
   fontPairs: FontPair[]
   labelFont: string
@@ -36,7 +39,10 @@ export type DesignOverrides = {
 }
 
 // A theme with the host's changes applied: what the invitation page draws.
-export type ResolvedDesign = Omit<Theme, 'fontPairs' | 'eventTypes'> & {
+export type ResolvedDesign = Omit<
+  Theme,
+  'fontPairs' | 'eventTypes' | 'accents'
+> & {
   fonts: FontPair
   backgroundAssetId: string | null
 }

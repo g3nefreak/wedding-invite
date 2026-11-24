@@ -14,7 +14,12 @@ export const gardenBotanical: Theme = {
     accent: '#9fe3b0',
     buttonInk: '#0b1a13',
   },
-  fontPairs: [{ display: 'Cormorant Garamond', body: 'Space Grotesk' }],
+  accents: ['#9fe3b0', '#f2d08a', '#f4b6a6', '#b8e0f2'],
+  fontPairs: [
+    { display: 'Cormorant Garamond', body: 'Space Grotesk' },
+    { display: 'Italiana', body: 'Jost' },
+    { display: 'Bodoni Moda', body: 'Jost' },
+  ],
   labelFont: 'Space Mono',
   art: 'leaf-arch',
   panelRadius: 28,

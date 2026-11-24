@@ -1,4 +1,6 @@
 import { isTokenShape } from '#/server/auth/token'
+import { EVENT_TYPES } from '#/server/config/event-types'
+import type { EventTypeKey } from '#/server/config/event-types'
 import { getTheme } from '#/server/config/themes'
 import type { ResolvedDesign } from '#/server/config/themes'
 import { AppError } from '#/server/errors'
@@ -8,6 +10,7 @@ import type {
   RsvpAnswer,
 } from '#/server/repositories/invite.repository'
 import { resolveDesign } from '#/server/services/design.service'
+import { publicPhotoUrl } from '#/server/storage/photo.storage'
 import { readDesignOverrides } from '#/server/validation/design.schema'
 
 // What one guest is allowed to see. No ids, nothing about other guests.
@@ -17,14 +20,24 @@ export type InviteView = {
   note: string | null
   event: {
     type: string
+    // The type's display name, such as "Wedding".
+    typeName: string
     title: string
     eventDate: string
     replyBy: string
     details: unknown
   }
   design: ResolvedDesign
+  // The host's background photo, when they uploaded one.
+  backgroundUrl: string | null
   reply: { answer: RsvpAnswer; message: string } | null
   replyOpen: boolean
+}
+
+function eventTypeName(type: string): string {
+  return Object.hasOwn(EVENT_TYPES, type)
+    ? EVENT_TYPES[type as EventTypeKey].name
+    : 'Event'
 }
 
 // Date-only columns come back as midnight UTC, so the UTC date is the day.
@@ -69,7 +82,8 @@ export async function getInvite(
   repo: InviteRepository,
   now: Date,
 ): Promise<InviteView> {
-  const { guest, role, rsvp, event } = await findPublishedInvite(token, repo)
+  const record = await findPublishedInvite(token, repo)
+  const { guest, role, rsvp, event } = record
 
   return {
     guestName: guest.name,
@@ -77,6 +91,7 @@ export async function getInvite(
     note: guest.personalNote ?? role?.note ?? null,
     event: {
       type: event.type,
+      typeName: eventTypeName(event.type),
       title: event.title,
       eventDate: toDay(event.eventDate),
       replyBy: toDay(event.replyBy),
@@ -86,6 +101,7 @@ export async function getInvite(
       getTheme(event.themeKey),
       readDesignOverrides(event.design),
     ),
+    backgroundUrl: publicPhotoUrl(record.backgroundPath),
     reply: rsvp ? { answer: rsvp.answer, message: rsvp.message } : null,
     replyOpen: isReplyOpen(event.replyBy, event.timezone, now),
   }
