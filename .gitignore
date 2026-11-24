@@ -1,0 +1,15 @@
+.codex/tmp/
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+/coverage
+/out/
+/build
+*.pem
+npm-debug.log*
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+/src/generated/

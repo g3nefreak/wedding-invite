@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+/* The invitation's colors come from CSS variables that InviteScreen sets from
+   the chosen theme. Naming them here gives Tailwind classes such as
+   bg-ground, text-ink and border-line. */
+@theme inline {
+  --color-ground: var(--ground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-button-ink: var(--button-ink);
+}

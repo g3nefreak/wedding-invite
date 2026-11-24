@@ -1,0 +1,42 @@
+{
+  "name": "wedding-invite",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^7.0.8",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "@tanstack/react-query": "^5.108.4",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-hook-form": "^7.92.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.13",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "happy-dom": "^21.0.4",
+    "prettier": "^3.10.1",
+    "prisma": "^7.10.1",
+    "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.1.1"
+  }
+}

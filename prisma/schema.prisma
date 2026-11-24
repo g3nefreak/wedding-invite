@@ -1,0 +1,122 @@
+// The only definition of the database tables. Change tables here, then run
+// `npx prisma migrate dev --name <what-changed>`. Never edit an old migration.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EventStatus {
+  draft
+  published
+}
+
+enum RsvpAnswer {
+  going
+  not_going
+}
+
+enum AssetKind {
+  background
+}
+
+// A host. The id is the Supabase Auth user id, so it is not generated here.
+model User {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  name      String
+  events    Event[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id        String      @id @default(uuid()) @db.Uuid
+  ownerId   String      @db.Uuid
+  owner     User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  eventDate DateTime    @db.Date
+  replyBy   DateTime    @db.Date
+  timezone  String      @default("Asia/Manila")
+  status    EventStatus @default(draft)
+  // Type-specific content: venues, headline and so on.
+  details   Json        @default("{}")
+  themeKey  String
+  // Only the host's overrides of the theme, never raw CSS or HTML.
+  design    Json        @default("{}")
+  roles     Role[]
+  guests    Guest[]
+  assets    Asset[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([ownerId])
+}
+
+// Used by event types that have roles, such as a wedding entourage.
+model Role {
+  id        String   @id @default(uuid()) @db.Uuid
+  eventId   String   @db.Uuid
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title     String
+  askText   String   @default("")
+  note      String   @default("")
+  attire    String   @default("")
+  color     String   @default("")
+  guests    Guest[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+}
+
+model Guest {
+  id           String   @id @default(uuid()) @db.Uuid
+  eventId      String   @db.Uuid
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name         String
+  // The guest's personal link. Random, never built from the name.
+  token        String   @unique
+  // Removing a role keeps the guest; they just no longer have that role.
+  roleId       String?  @db.Uuid
+  role         Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  personalNote String?
+  rsvp         Rsvp?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([roleId])
+}
+
+// One row per guest. Replying again updates it.
+model Rsvp {
+  id        String     @id @default(uuid()) @db.Uuid
+  guestId   String     @unique @db.Uuid
+  guest     Guest      @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  answer    RsvpAnswer
+  message   String     @default("")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// A stored photo.
+model Asset {
+  id        String    @id @default(uuid()) @db.Uuid
+  eventId   String    @db.Uuid
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  kind      AssetKind
+  path      String
+  width     Int
+  height    Int
+  bytes     Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([eventId])
+}
