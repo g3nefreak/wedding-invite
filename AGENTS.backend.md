@@ -7,8 +7,8 @@ This file sits beside the team policy in `AGENTS.md` (from `agent-setup-bundle/1
 
 A web app where a client (the host) creates an online invitation for an event, designs it by picking a theme and customizing it, sends each guest a personal link, and sees who is coming.
 
-- Event types: wedding (with entourage roles) first; birthday, bridal shower and others later.
-- Design model: **theme + customize only**. The host picks a theme, then changes the background photo, colors, font pair and text. There is no drag-and-drop editor. Do not build one.
+- Event types: wedding (with entourage roles) and birthday and christening (no roles; godparents are listed by name in a `people` block). Bridal shower and others later.
+- Design model: **theme + customize only**. The host picks a theme, changes the accent color, font pair and background photo, and builds the invitation from a fixed library of section blocks (switch each on or off, set the order, fill in the content). There is no drag-and-drop editor. Do not build one.
 - Two kinds of people use it: **hosts** (log in, own events) and **guests** (no account, open a personal link, reply).
 
 ## 2. Stack
@@ -72,13 +72,17 @@ If a change does not fit this flow, stop and ask instead of bending it.
 | Table | Key fields | Notes |
 |---|---|---|
 | `User` | id, email, name | A host. The id matches the Supabase Auth user id. |
-| `Event` | id, ownerId, type, title, eventDate, replyBy, timezone (default `Asia/Manila`), status (`draft`/`published`), details (JSON), themeKey, design (JSON) | `details` holds type-specific content (venues, celebrant, headline). `design` holds only the host's overrides of the theme. |
+| `Event` | id, ownerId, type, title, eventDate, replyBy, timezone (default `Asia/Manila`), status (`draft`/`published`), details (JSON), themeKey, design (JSON), sections (JSON), cover (JSON) | `details` holds type-specific content (venues, celebrant, headline). `design` holds only the host's overrides of the theme. `sections` is the ordered list of section blocks; `cover` is the envelope cover's settings. |
 | `Role` | id, eventId, title, askText, note, attire, color | Used by event types that have roles (wedding entourage). |
 | `Guest` | id, eventId, name, token (unique), roleId (optional), personalNote | `token` is a random, unguessable string, never built from the name. |
 | `Rsvp` | id, guestId (unique), answer (`going`/`not_going`), message, updatedAt | One row per guest. Replying again updates it. |
-| `Asset` | id, eventId, kind (`background`), path, width, height, bytes | A stored photo. |
+| `Asset` | id, eventId, kind (`background`/`section`), path, width, height, bytes | A stored photo. `section` photos are used inside section blocks. |
 
 Themes and event types are **not** tables. They are files in `src/server/config/`.
+
+### Section blocks
+
+`Event.sections` is a list of `{ id, type, enabled, content }`. The block types are `hero`, `countdown`, `story`, `message`, `people`, `gifts`, `dressCode`, `reminders`, `whenWhere`, `rsvp`, `closing` and `custom`. Each type has one strict Zod schema in `src/server/validation/sections.schema.ts`; an unknown type or an unknown field is refused on save. Reading is forgiving: a block that fails to parse is skipped. `Event.cover` is `{ enabled, monogram, line }`. Each event type lists its allowed blocks and its default blocks in `config/event-types.ts`.
 
 ### Theme file shape
 
@@ -100,7 +104,7 @@ Themes and event types are **not** tables. They are files in `src/server/config/
 }
 ```
 
-`Event.design` may override only: `accent`, `fontPairIndex`, `backgroundAssetId`, `overlay`. Anything else is rejected by validation. A host can pick only from the theme's own `fontPairs`.
+`Event.design` may override only: the accent color, `fontPairIndex`, `displayFont`, `bodyFont`, `backgroundAssetId` and `overlay`. Anything else is rejected by validation. A host picks fonts either as one of the theme's own `fontPairs`, or separately as a heading font and a text font from the font library in `src/server/config/fonts.ts`. A font name outside that library is refused, because the name ends up in the page's CSS. Every library font must also be loaded in `src/app/fonts.ts`.
 
 ## 6. API
 
@@ -119,27 +123,30 @@ Host (login required; every call checks that the event belongs to the logged-in 
 | GET, POST | `/api/events` | Lists own events; creates one. |
 | GET, PATCH, DELETE | `/api/events/[eventId]` | Reads, edits, deletes one event. |
 | PATCH | `/api/events/[eventId]/design` | Changes theme and design overrides. |
+| PATCH | `/api/events/[eventId]/sections` | Replaces the section blocks and the cover settings. |
 | POST | `/api/events/[eventId]/publish` | Makes guest links work. |
 | GET, POST | `/api/events/[eventId]/roles` | Lists and adds roles. |
 | PATCH, DELETE | `/api/events/[eventId]/roles/[roleId]` | Edits, removes a role. |
 | GET, POST | `/api/events/[eventId]/guests` | Lists guests with their replies and links; adds a guest. |
 | PATCH, DELETE | `/api/events/[eventId]/guests/[guestId]` | Edits, removes a guest. |
 | GET | `/api/events/[eventId]/rsvps/summary` | Counts: going, not going, no reply yet. |
-| POST | `/api/events/[eventId]/assets` | Uploads a background photo. |
+| POST | `/api/events/[eventId]/assets` | Uploads a photo. Takes a kind: `background` (default) or `section`. |
+| DELETE | `/api/events/[eventId]/assets/[assetId]` | Removes one section photo, and takes it out of any block that used it. |
 
 Response shape, always: `{ ok: true, data }` or `{ ok: false, error: { code, message } }`.
 
 ## 7. Security rules (never break these)
 
-1. A guest endpoint returns data about **one guest only**. Never return the guest list, other guests' names or other guests' replies to a guest.
+1. A guest endpoint returns data about **one guest only**. Never return the guest list, guest links or other guests' replies to a guest. Names a host types into a `people` block are published content, like the couple's names; the endpoint never reads `Guest` rows to build that block.
 2. Every host endpoint checks ownership in the service: `event.ownerId === session.userId`. A wrong owner gets 404, not 403.
 3. Guest tokens are at least 128 bits of randomness from a cryptographic generator.
 4. Guest links work only when the event is `published`.
 5. Replies are refused after `replyBy` (the host can still see them).
 6. Rate-limit the guest endpoints per IP and per token.
-7. Uploads: images only (JPEG, PNG, WebP), checked by file content and not by file name, 8 MB maximum, resized on the server to at most 2000 px wide, stored under a path that includes the event id.
+7. Uploads: images only (JPEG, PNG, WebP), checked by file content and not by file name, 8 MB maximum, resized on the server (background at most 2000 px wide, section photos 1600 px, QR photos 1000 px), stored under a path that includes the event id. At most 30 section photos per event.
 8. All user text is stored as plain text and rendered as text. Never render it as HTML.
 9. Secrets live in environment variables. Never commit them. The Supabase service key is used only in `src/server/`.
+10. The only links in an invitation are map links. A map link must start with `https://` and point to Google Maps (`google.com/maps`, `maps.google.com/maps`, `maps.app.goo.gl`, `goo.gl/maps`) or Waze (`waze.com`). Anything else is refused on save.
 
 ## 8. Rules for the agent
 

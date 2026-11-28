@@ -1,3 +1,10 @@
+import { eventDayEnd, eventStart } from '#/lib/event-start'
+import {
+  firstPlaceTime,
+  resolveSections,
+  sectionsForEvent,
+} from '#/lib/sections'
+import type { SectionView } from '#/lib/sections'
 import { isTokenShape } from '#/server/auth/token'
 import { EVENT_TYPES } from '#/server/config/event-types'
 import type { EventTypeKey } from '#/server/config/event-types'
@@ -12,6 +19,8 @@ import type {
 import { resolveDesign } from '#/server/services/design.service'
 import { publicPhotoUrl } from '#/server/storage/photo.storage'
 import { readDesignOverrides } from '#/server/validation/design.schema'
+import { readCover } from '#/server/validation/sections.schema'
+import type { Cover } from '#/server/validation/sections.schema'
 
 // What one guest is allowed to see. No ids, nothing about other guests.
 export type InviteView = {
@@ -30,6 +39,14 @@ export type InviteView = {
   design: ResolvedDesign
   // The host's background photo, when they uploaded one.
   backgroundUrl: string | null
+  // The envelope a guest opens first.
+  cover: Cover
+  // The switched-on sections, in the host's order.
+  sections: SectionView[]
+  // The instant the countdown runs to.
+  startsAt: string
+  // The end of the event's day, when "today" becomes "thank you".
+  dayEndsAt: string
   reply: { answer: RsvpAnswer; message: string } | null
   replyOpen: boolean
 }
@@ -85,6 +102,12 @@ export async function getInvite(
   const record = await findPublishedInvite(token, repo)
   const { guest, role, rsvp, event } = record
 
+  const blocks = sectionsForEvent(event.type, event.sections, event.details)
+  const photos = record.sectionPhotos.flatMap((photo) => {
+    const url = publicPhotoUrl(photo.path)
+    return url ? [{ ...photo, url }] : []
+  })
+
   return {
     guestName: guest.name,
     role,
@@ -102,6 +125,14 @@ export async function getInvite(
       readDesignOverrides(event.design),
     ),
     backgroundUrl: publicPhotoUrl(record.backgroundPath),
+    cover: readCover(event.cover, event.title),
+    sections: resolveSections(blocks, photos),
+    startsAt: eventStart(
+      toDay(event.eventDate),
+      firstPlaceTime(blocks),
+      event.timezone,
+    ),
+    dayEndsAt: eventDayEnd(toDay(event.eventDate), event.timezone),
     reply: rsvp ? { answer: rsvp.answer, message: rsvp.message } : null,
     replyOpen: isReplyOpen(event.replyBy, event.timezone, now),
   }

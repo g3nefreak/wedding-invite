@@ -24,7 +24,19 @@ export type Theme = {
   // The first pair is the default. A host can only pick from this list.
   fontPairs: FontPair[]
   labelFont: string
-  art: 'photo' | 'leaf-arch' | 'orbit-sun' | 'deco-fan'
+  art:
+    | 'photo'
+    | 'leaf-arch'
+    | 'orbit-sun'
+    | 'deco-fan'
+    | 'frame'
+    | 'stars'
+    | 'horizon'
+    | 'petals'
+    | 'waves'
+    | 'clouds'
+  // The shape of the flap on the envelope cover.
+  envelope: 'straight' | 'pointed' | 'curved' | 'stepped'
   panelRadius: number
   heroAlign: 'left' | 'center'
   photo: { overlay: number; filter: 'none' | 'grayscale' }
@@ -34,6 +46,10 @@ export type Theme = {
 export type DesignOverrides = {
   accent?: string
   fontPairIndex?: number
+  // A heading or text font picked from the font library on its own. Each
+  // wins over the pair above when set.
+  displayFont?: string
+  bodyFont?: string
   backgroundAssetId?: string
   overlay?: number
 }

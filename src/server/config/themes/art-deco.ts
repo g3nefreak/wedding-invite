@@ -4,7 +4,7 @@ export const artDeco: Theme = {
   key: 'art-deco',
   name: 'Art Deco',
   category: 'glamorous',
-  eventTypes: ['wedding'],
+  eventTypes: ['wedding', 'birthday'],
   palette: {
     ground: '#0b0c10',
     ink: '#f6eed9',
@@ -22,6 +22,7 @@ export const artDeco: Theme = {
   ],
   labelFont: 'Space Mono',
   art: 'deco-fan',
+  envelope: 'stepped',
   panelRadius: 6,
   heroAlign: 'center',
   photo: { overlay: 0.6, filter: 'none' },

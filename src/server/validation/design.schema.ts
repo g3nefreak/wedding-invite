@@ -10,6 +10,8 @@ const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/)
 const savedDesignSchema = z.object({
   accent: hexColor.optional().catch(undefined),
   fontPairIndex: z.number().int().min(0).optional().catch(undefined),
+  displayFont: z.string().min(1).max(40).optional().catch(undefined),
+  bodyFont: z.string().min(1).max(40).optional().catch(undefined),
   backgroundAssetId: z.string().min(1).optional().catch(undefined),
   overlay: z.number().optional().catch(undefined),
 })
@@ -27,6 +29,9 @@ export const designInputSchema = z.strictObject({
   themeKey: z.string().min(1).max(60).optional(),
   accent: hexColor.nullable().optional(),
   fontPairIndex: z.number().int().min(0).max(20).nullable().optional(),
+  // Checked against the font library in the service.
+  displayFont: z.string().min(1).max(40).nullable().optional(),
+  bodyFont: z.string().min(1).max(40).nullable().optional(),
   overlay: z.number().min(0).max(0.9).nullable().optional(),
 })
 

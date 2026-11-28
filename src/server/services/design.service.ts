@@ -1,3 +1,4 @@
+import { isBodyFont, isDisplayFont } from '#/server/config/fonts'
 import { getTheme } from '#/server/config/themes'
 import type { DesignOverrides } from '#/server/config/themes'
 import { AppError } from '#/server/errors'
@@ -34,7 +35,13 @@ export async function updateDesign(
     ? { backgroundAssetId: saved.backgroundAssetId, overlay: saved.overlay }
     : { ...saved }
 
-  for (const key of ['accent', 'fontPairIndex', 'overlay'] as const) {
+  for (const key of [
+    'accent',
+    'fontPairIndex',
+    'displayFont',
+    'bodyFont',
+    'overlay',
+  ] as const) {
     const value = input[key]
     if (value === null) delete design[key]
     else if (value !== undefined) Object.assign(design, { [key]: value })
@@ -45,6 +52,14 @@ export async function updateDesign(
     design.fontPairIndex >= theme.fontPairs.length
   ) {
     throw new AppError('VALIDATION', "Choose one of this theme's font pairs")
+  }
+
+  // Font names end up in the page's CSS, so only the library's are allowed.
+  if (
+    (design.displayFont && !isDisplayFont(design.displayFont)) ||
+    (design.bodyFont && !isBodyFont(design.bodyFont))
+  ) {
+    throw new AppError('VALIDATION', 'Choose one of the listed fonts')
   }
 
   // Drop anything left undefined so only real choices are stored.

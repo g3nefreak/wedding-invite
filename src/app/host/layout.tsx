@@ -26,9 +26,12 @@ async function HostIdentity() {
 // The frame around every host page: dark background, brand and log out.
 export default function HostLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col bg-host-ground font-host-body text-host-ink scheme-dark">
+    // A page that needs the whole window (the invitation editor, with its big
+    // preview) marks itself with `data-wide`; the frame then stops limiting
+    // the width, for the header too so the two stay lined up.
+    <div className="flex flex-1 flex-col bg-host-ground font-host-body text-host-ink scheme-dark [&:has([data-wide])_.host-frame]:max-w-none lg:[&:has([data-wide])_.host-frame]:px-10">
       <header className="border-b border-host-line bg-host-panel">
-        <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-4 px-6 py-4">
+        <div className="host-frame mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <BrandMark />
           <div className="flex flex-wrap items-center gap-4">
             <Suspense fallback={null}>
@@ -38,7 +41,7 @@ export default function HostLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10">
+      <main className="host-frame mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10">
         {children}
       </main>
     </div>

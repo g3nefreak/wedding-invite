@@ -1,6 +1,10 @@
 import type { Prisma } from '#/generated/prisma/client'
 import { db } from '#/server/db'
-import { findBackgroundPath } from '#/server/repositories/asset.repository'
+import {
+  findBackgroundPath,
+  prismaAssetRepository,
+} from '#/server/repositories/asset.repository'
+import type { AssetRecord } from '#/server/repositories/asset.repository'
 
 export type EventRecord = {
   id: string
@@ -14,8 +18,12 @@ export type EventRecord = {
   details: unknown
   themeKey: string
   design: unknown
+  sections: unknown
+  cover: unknown
   // Where the background photo is stored. Filled in when one event is read.
   backgroundPath?: string | null
+  // The event's section photos. Filled in when one event is read.
+  sectionAssets?: AssetRecord[]
 }
 
 export type NewEvent = Pick<
@@ -33,6 +41,8 @@ export type EventChanges = Partial<
     | 'status'
     | 'details'
     | 'design'
+    | 'sections'
+    | 'cover'
   >
 >
 
@@ -53,23 +63,33 @@ export const prismaEventRepository: EventRepository = {
   async findById(id) {
     const event = await db().event.findUnique({ where: { id } })
     if (!event) return null
-    return { ...event, backgroundPath: await findBackgroundPath(event.design) }
+    return {
+      ...event,
+      backgroundPath: await findBackgroundPath(event.design),
+      sectionAssets: await prismaAssetRepository.listByEvent(id, 'section'),
+    }
   },
 
   create: (data) => db().event.create({ data }),
 
-  update: (id, { details, design, ...rest }) =>
+  update: (id, { details, design, sections, cover, ...rest }) =>
     db().event.update({
       where: { id },
       data: {
         ...rest,
-        // Both are checked by their zod schemas before they get here.
+        // All four are checked by their zod schemas before they get here.
         ...(details === undefined
           ? {}
           : { details: details as Prisma.InputJsonValue }),
         ...(design === undefined
           ? {}
           : { design: design as Prisma.InputJsonValue }),
+        ...(sections === undefined
+          ? {}
+          : { sections: sections as Prisma.InputJsonValue }),
+        ...(cover === undefined
+          ? {}
+          : { cover: cover as Prisma.InputJsonValue }),
       },
     }),
 

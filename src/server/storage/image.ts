@@ -12,7 +12,11 @@ const NOT_A_PHOTO = 'Upload a JPEG, PNG or WebP photo'
 // The check reads the file's own contents: the name and the type the browser
 // claims are never trusted. The result is always a fresh WebP, so anything
 // hidden in the original file (location data, scripts) is left behind.
-export async function processPhoto(input: Buffer): Promise<ProcessedPhoto> {
+export async function processPhoto(
+  input: Buffer,
+  // Section photos and QR codes are kept smaller than a background photo.
+  maxWidth = MAX_WIDTH,
+): Promise<ProcessedPhoto> {
   try {
     const { format } = await sharp(input).metadata()
     if (!format || !ALLOWED_FORMATS.includes(format)) {
@@ -22,7 +26,7 @@ export async function processPhoto(input: Buffer): Promise<ProcessedPhoto> {
     const { data, info } = await sharp(input)
       // Turn the picture the way the camera meant it before resizing.
       .rotate()
-      .resize({ width: MAX_WIDTH, withoutEnlargement: true })
+      .resize({ width: maxWidth, withoutEnlargement: true })
       .webp({ quality: 82 })
       .toBuffer({ resolveWithObject: true })
 

@@ -10,11 +10,6 @@ export const eventFormSchema = z
     title: z.string().trim().min(1, 'Enter a title').max(80),
     eventDate: z.iso.date('Enter the event date'),
     replyBy: z.iso.date('Enter the reply-by date'),
-    headline: z.string().trim().max(200),
-    ceremonyVenue: z.string().trim().max(120),
-    ceremonyTime: z.string().trim().max(40),
-    receptionVenue: z.string().trim().max(120),
-    receptionTime: z.string().trim().max(40),
   })
   .refine((value) => value.replyBy <= value.eventDate, {
     path: ['replyBy'],
@@ -28,28 +23,15 @@ export function toFormValues(event: EventView): EventFormValues {
     title: event.title,
     eventDate: event.eventDate,
     replyBy: event.replyBy,
-    headline: event.details.headline ?? '',
-    ceremonyVenue: event.details.ceremony?.venue ?? '',
-    ceremonyTime: event.details.ceremony?.time ?? '',
-    receptionVenue: event.details.reception?.venue ?? '',
-    receptionTime: event.details.reception?.time ?? '',
   }
 }
 
-// A place is only saved when the host typed something for it.
-function place(venue: string, time: string) {
-  return venue || time ? { venue, time } : undefined
-}
-
+// The invitation's wording and places are edited on the Invitation tab, so
+// this form sends only the title and dates and leaves the rest untouched.
 export function toUpdateInput(values: EventFormValues): UpdateEventInput {
   return {
     title: values.title,
     eventDate: values.eventDate,
     replyBy: values.replyBy,
-    details: {
-      headline: values.headline || undefined,
-      ceremony: place(values.ceremonyVenue, values.ceremonyTime),
-      reception: place(values.receptionVenue, values.receptionTime),
-    },
   }
 }

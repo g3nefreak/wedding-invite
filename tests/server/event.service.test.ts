@@ -126,3 +126,21 @@ it('publishes and deletes', async () => {
   await deleteEvent(OWNER, mine.id, events)
   expect(events.rows).toHaveLength(0)
 })
+
+it('creates a birthday and christening event, which has no roles', async () => {
+  const event = await createEvent(
+    owner,
+    { ...input, type: 'birthday', title: 'Zian Elandre', themeKey: 'sky-blue' },
+    { events, users },
+  )
+  expect(event).toMatchObject({
+    type: 'birthday',
+    typeName: 'Birthday and christening',
+    hasRoles: false,
+  })
+})
+
+it('a wedding has roles', async () => {
+  const event = await createEvent(owner, input, { events, users })
+  expect(event).toMatchObject({ typeName: 'Wedding', hasRoles: true })
+})

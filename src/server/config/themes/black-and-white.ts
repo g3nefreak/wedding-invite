@@ -4,7 +4,7 @@ export const blackAndWhite: Theme = {
   key: 'black-and-white',
   name: 'Black and White',
   category: 'classic-formal',
-  eventTypes: ['wedding'],
+  eventTypes: ['wedding', 'birthday'],
   palette: {
     ground: '#0b0b0b',
     ink: '#ffffff',
@@ -22,6 +22,7 @@ export const blackAndWhite: Theme = {
   ],
   labelFont: 'Space Mono',
   art: 'photo',
+  envelope: 'straight',
   panelRadius: 28,
   heroAlign: 'left',
   photo: { overlay: 0.62, filter: 'grayscale' },

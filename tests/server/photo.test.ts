@@ -1,9 +1,5 @@
 import sharp from 'sharp'
 import { beforeEach, expect, it } from 'vitest'
-import type {
-  AssetRecord,
-  AssetRepository,
-} from '#/server/repositories/asset.repository'
 import { createEvent, getEvent } from '#/server/services/event.service'
 import {
   MAX_PHOTO_BYTES,
@@ -13,36 +9,14 @@ import {
 import { processPhoto } from '#/server/storage/image'
 import type { PhotoStorage } from '#/server/storage/photo.storage'
 import {
+  fakeAssetRepository,
   fakeEventRepository,
   fakeUserRepository,
   OWNER,
   STRANGER,
 } from './fakes'
 
-function fakeAssets(): AssetRepository & { rows: AssetRecord[] } {
-  const rows: AssetRecord[] = []
-  let next = 1
-  return {
-    rows,
-    async create(data) {
-      const row = {
-        id: `dddddddd-dddd-4ddd-8ddd-${String(next++).padStart(12, '0')}`,
-        ...data,
-      }
-      rows.push(row)
-      return row
-    },
-    async findById(id) {
-      return rows.find((row) => row.id === id) ?? null
-    },
-    async delete(id) {
-      rows.splice(
-        rows.findIndex((row) => row.id === id),
-        1,
-      )
-    },
-  }
-}
+const fakeAssets = fakeAssetRepository
 
 function fakeStorage(): PhotoStorage & { files: Map<string, Buffer> } {
   const files = new Map<string, Buffer>()
@@ -99,6 +73,11 @@ it('shrinks a wide photo to 2000 px and turns it into WebP', async () => {
   const result = await processPhoto(await picture(3000, 1500, 'jpeg'))
   expect(result).toMatchObject({ width: 2000, height: 1000 })
   expect((await sharp(result.bytes).metadata()).format).toBe('webp')
+})
+
+it('shrinks to the width it is asked for', async () => {
+  const photo = await processPhoto(await picture(2400, 1200), 1600)
+  expect(photo.width).toBe(1600)
 })
 
 it('leaves a small photo at its own size', async () => {

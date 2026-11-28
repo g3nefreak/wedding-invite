@@ -4,7 +4,7 @@ export const bohemian: Theme = {
   key: 'bohemian',
   name: 'Bohemian',
   category: 'free-spirited',
-  eventTypes: ['wedding'],
+  eventTypes: ['wedding', 'birthday'],
   palette: {
     ground: '#ead5ba',
     ink: '#3f2114',
@@ -22,6 +22,7 @@ export const bohemian: Theme = {
   ],
   labelFont: 'Space Mono',
   art: 'orbit-sun',
+  envelope: 'pointed',
   panelRadius: 28,
   heroAlign: 'center',
   photo: { overlay: 0.3, filter: 'none' },

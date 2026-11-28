@@ -22,6 +22,8 @@ enum RsvpAnswer {
 
 enum AssetKind {
   background
+  // A photo used inside a section block (story, hero, QR code and so on).
+  section
 }
 
 // A host. The id is the Supabase Auth user id, so it is not generated here.
@@ -49,6 +51,10 @@ model Event {
   themeKey  String
   // Only the host's overrides of the theme, never raw CSS or HTML.
   design    Json        @default("{}")
+  // The ordered list of section blocks the invitation shows.
+  sections  Json        @default("[]")
+  // The envelope cover's settings: on or off, monogram and opening line.
+  cover     Json        @default("{}")
   roles     Role[]
   guests    Guest[]
   assets    Asset[]

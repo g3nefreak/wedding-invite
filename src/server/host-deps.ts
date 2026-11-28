@@ -37,7 +37,7 @@ export const hostDeps: HostDeps = {
 export type PhotoDeps = {
   assets: AssetRepository
   photos: PhotoStorage
-  processImage: (input: Buffer) => Promise<ProcessedPhoto>
+  processImage: (input: Buffer, maxWidth?: number) => Promise<ProcessedPhoto>
 }
 
 export const photoDeps: PhotoDeps = {

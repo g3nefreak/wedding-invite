@@ -1,5 +1,8 @@
 import { db } from '#/server/db'
-import { findBackgroundPath } from '#/server/repositories/asset.repository'
+import {
+  findBackgroundPath,
+  prismaAssetRepository,
+} from '#/server/repositories/asset.repository'
 
 export type RsvpAnswer = 'going' | 'not_going'
 
@@ -27,9 +30,13 @@ export type InviteRecord = {
     details: unknown
     themeKey: string
     design: unknown
+    sections: unknown
+    cover: unknown
   }
   // Where the event's background photo is stored, if it has one.
   backgroundPath?: string | null
+  // The photos the event's sections may show.
+  sectionPhotos: { id: string; path: string; width: number; height: number }[]
 }
 
 // Services receive this instead of touching the database themselves, so
@@ -58,6 +65,9 @@ export const prismaInviteRepository: InviteRepository = {
     // timestamps) can leave this layer by accident.
     return {
       backgroundPath: await findBackgroundPath(event.design),
+      sectionPhotos: (
+        await prismaAssetRepository.listByEvent(event.id, 'section')
+      ).map(({ id, path, width, height }) => ({ id, path, width, height })),
       guest: {
         id: guest.id,
         name: guest.name,
@@ -86,6 +96,8 @@ export const prismaInviteRepository: InviteRepository = {
         details: event.details,
         themeKey: event.themeKey,
         design: event.design,
+        sections: event.sections,
+        cover: event.cover,
       },
     }
   },

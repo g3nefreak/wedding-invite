@@ -78,3 +78,66 @@ it('keeps replies open through the whole reply-by day in the event timezone', ()
     isReplyOpen(replyBy, 'Asia/Manila', new Date('2027-03-31T16:00:00Z')),
   ).toBe(false)
 })
+
+it('returns the cover, the enabled sections and the countdown target', async () => {
+  const v = await getInvite(T1, repo, now)
+  expect(v.cover).toEqual({
+    enabled: true,
+    monogram: 'M&P',
+    line: 'You have a letter',
+  })
+  // Nothing saved yet, so the wedding defaults are used and the old headline
+  // is carried into the opening section.
+  expect(v.sections[0]).toMatchObject({
+    type: 'hero',
+    content: { kicker: 'We are getting married', photo: null },
+  })
+  expect(v.sections.map((section) => section.type)).not.toContain('story')
+  // No time set: the countdown runs to the start of the day in Manila.
+  expect(v.startsAt).toBe('2027-04-23T16:00:00.000Z')
+  // The event day runs until the next midnight in Manila.
+  expect(v.dayEndsAt).toBe('2027-04-24T16:00:00.000Z')
+})
+
+it('counts down to the first place time and shows section photos', async () => {
+  const records = sampleRecords()
+  records[T1].event.sections = [
+    {
+      id: 'hero',
+      type: 'hero',
+      enabled: true,
+      content: { kicker: '', photoAssetId: 'p1' },
+    },
+    {
+      id: 'whenWhere',
+      type: 'whenWhere',
+      enabled: true,
+      content: {
+        places: [
+          {
+            label: 'Ceremony',
+            venue: 'Church',
+            time: '2:00 PM',
+            address: '',
+            mapUrl: '',
+          },
+        ],
+      },
+    },
+    { id: 'rsvp', type: 'rsvp', enabled: true, content: { intro: '' } },
+  ]
+  records[T1].sectionPhotos = [
+    { id: 'p1', path: 'event-1/p1.webp', width: 800, height: 600 },
+  ]
+  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://project.example'
+  const v = await getInvite(T1, fakeInviteRepository(records), now)
+  expect(v.startsAt).toBe('2027-04-24T06:00:00.000Z')
+  expect(v.sections[0]).toMatchObject({
+    content: { photo: { url: expect.stringContaining('event-1/p1.webp') } },
+  })
+})
+
+it('never includes anything about other guests in the sections', async () => {
+  const v = await getInvite(T1, repo, now)
+  expect(JSON.stringify([v.sections, v.cover])).not.toContain('Bea Cruz')
+})

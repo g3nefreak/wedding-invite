@@ -34,8 +34,8 @@ it('clamps overlay to 0..0.9', () => {
   ).toBe(0)
 })
 
-it('lists four wedding themes', () => {
-  expect(listThemes('wedding')).toHaveLength(4)
+it('lists twelve wedding themes', () => {
+  expect(listThemes('wedding')).toHaveLength(12)
 })
 
 it('rejects an unknown theme', () => {

@@ -4,7 +4,7 @@ export const gardenBotanical: Theme = {
   key: 'garden-botanical',
   name: 'Garden Botanical',
   category: 'nature',
-  eventTypes: ['wedding'],
+  eventTypes: ['wedding', 'birthday'],
   palette: {
     ground: '#0b1a13',
     ink: '#effff3',
@@ -22,6 +22,7 @@ export const gardenBotanical: Theme = {
   ],
   labelFont: 'Space Mono',
   art: 'leaf-arch',
+  envelope: 'curved',
   panelRadius: 28,
   heroAlign: 'center',
   photo: { overlay: 0.5, filter: 'none' },

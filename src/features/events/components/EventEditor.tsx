@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   BUTTON_DANGER,
@@ -18,6 +19,7 @@ import { DesignPanel } from '#/features/design'
 import { GuestsPanel } from '#/features/guests'
 import { formatDay } from '#/features/invite'
 import { RolesPanel } from '#/features/roles'
+import { InvitationPanel } from '#/features/sections'
 import { ApiError } from '#/lib/api'
 import {
   useDeleteEventMutation,
@@ -65,8 +67,9 @@ export function EventEditor({ eventId }: { eventId: string }) {
 const TABS = [
   { key: 'guests', label: 'Guests' },
   { key: 'roles', label: 'Roles' },
-  { key: 'details', label: 'Details' },
+  { key: 'invitation', label: 'Invitation' },
   { key: 'design', label: 'Design' },
+  { key: 'details', label: 'Details' },
   { key: 'settings', label: 'Settings' },
 ] as const
 
@@ -76,8 +79,25 @@ function LoadedEvent({ event }: { event: EventView }) {
   // The open tab lives in the address (?tab=roles), so it survives a reload
   // and the browser's back button moves between tabs.
   const requested = useSearchParams().get('tab')
-  const tab: TabKey =
+  const requestedTab: TabKey =
     TABS.find((candidate) => candidate.key === requested)?.key ?? 'guests'
+  // An address that asks for Roles on an event without them shows Guests.
+  const tab: TabKey =
+    requestedTab === 'roles' && !event.hasRoles ? 'guests' : requestedTab
+
+  // The Invitation tab keeps its changes in the page until they are saved.
+  // Leaving for another tab would lose them, so the host is asked first.
+  const unsaved = useRef(false)
+  function confirmLeaving(leaving: MouseEvent<HTMLAnchorElement>) {
+    if (!unsaved.current) return
+    if (
+      window.confirm('Leave without saving your changes to the invitation?')
+    ) {
+      unsaved.current = false
+    } else {
+      leaving.preventDefault()
+    }
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -102,16 +122,20 @@ function LoadedEvent({ event }: { event: EventView }) {
         aria-label="Event sections"
         className="flex flex-wrap gap-x-6 gap-y-2 border-b border-host-line"
       >
-        {TABS.map((item) => (
-          <Link
-            key={item.key}
-            href={`/host/events/${event.id}?tab=${item.key}`}
-            aria-current={item.key === tab ? 'page' : undefined}
-            className={`${TAB} -mb-px`}
-          >
-            {item.label}
-          </Link>
-        ))}
+        {/* Roles are for events with an entourage; others do not show it. */}
+        {TABS.filter((item) => item.key !== 'roles' || event.hasRoles).map(
+          (item) => (
+            <Link
+              key={item.key}
+              href={`/host/events/${event.id}?tab=${item.key}`}
+              aria-current={item.key === tab ? 'page' : undefined}
+              onClick={confirmLeaving}
+              className={`${TAB} -mb-px`}
+            >
+              {item.label}
+            </Link>
+          ),
+        )}
       </nav>
 
       {tab === 'guests' && (
@@ -121,6 +145,14 @@ function LoadedEvent({ event }: { event: EventView }) {
         />
       )}
       {tab === 'roles' && <RolesPanel eventId={event.id} />}
+      {tab === 'invitation' && (
+        <InvitationPanel
+          event={event}
+          onDirtyChange={(dirty) => {
+            unsaved.current = dirty
+          }}
+        />
+      )}
       {tab === 'details' && <DetailsForm event={event} />}
       {tab === 'design' && <DesignPanel event={event} />}
       {tab === 'settings' && (
@@ -246,53 +278,10 @@ function DetailsForm({ event }: { event: EventView }) {
           </Field>
         </div>
 
-        <Field
-          id="headline"
-          label="Headline"
-          hint="A line under the title on the invitation."
-          error={errors.headline?.message}
-        >
-          {text(
-            'headline',
-            'Together with their families, they invite you to their wedding',
-          )}
-        </Field>
-
-        <fieldset className="grid gap-6 sm:grid-cols-[2fr_1fr]">
-          <legend className="mb-4 font-host-display text-2xl">Ceremony</legend>
-          <Field
-            id="ceremonyVenue"
-            label="Venue"
-            error={errors.ceremonyVenue?.message}
-          >
-            {text('ceremonyVenue', 'San Agustin Church, Manila')}
-          </Field>
-          <Field
-            id="ceremonyTime"
-            label="Time"
-            error={errors.ceremonyTime?.message}
-          >
-            {text('ceremonyTime', '3:00 PM')}
-          </Field>
-        </fieldset>
-
-        <fieldset className="grid gap-6 sm:grid-cols-[2fr_1fr]">
-          <legend className="mb-4 font-host-display text-2xl">Reception</legend>
-          <Field
-            id="receptionVenue"
-            label="Venue"
-            error={errors.receptionVenue?.message}
-          >
-            {text('receptionVenue', 'The Glass Garden, Pasig')}
-          </Field>
-          <Field
-            id="receptionTime"
-            label="Time"
-            error={errors.receptionTime?.message}
-          >
-            {text('receptionTime', '6:00 PM')}
-          </Field>
-        </fieldset>
+        <p className="leading-normal text-host-ink-soft">
+          The wording, places and times of the invitation are on the Invitation
+          tab.
+        </p>
 
         <div className="flex flex-wrap items-center gap-4">
           <button

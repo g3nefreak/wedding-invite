@@ -7,12 +7,15 @@ import {
   BUTTON_SMALL,
   CARD,
   ERROR_TEXT,
+  LABEL,
+  SELECT,
 } from '#/components/host-styles'
 import { useThemesQuery } from '#/features/events/events.query'
 import type { EventView, ThemeOption } from '#/features/events/events.types'
 import { ApiError } from '#/lib/api'
 import { contrastRatio, READABLE_CONTRAST } from '#/lib/contrast'
 import { MAX_OVERLAY } from '#/lib/resolve-design'
+import { BODY_FONTS, DISPLAY_FONTS } from '#/server/config/fonts'
 import {
   useRemovePhotoMutation,
   useUpdateDesignMutation,
@@ -35,7 +38,7 @@ function fontFamily(name: string): string {
 
 // The Design tab of an event's page.
 export function DesignPanel({ event }: { event: EventView }) {
-  const themes = useThemesQuery('wedding')
+  const themes = useThemesQuery(event.type)
 
   if (themes.isPending) return <p>Loading the design options…</p>
 
@@ -72,9 +75,17 @@ function DesignEditor({
   const [accent, setAccent] = useState<string | null>(
     event.design.accent ?? null,
   )
-  const [fontPairIndex, setFontPairIndex] = useState(
-    event.design.fontPairIndex ?? 0,
-  )
+  // The fonts in use: picked on their own, or the saved suggested pair.
+  const [fonts, setFonts] = useState(() => {
+    const saved =
+      themes.find((item) => item.key === event.themeKey) ?? themes[0]
+    const pair =
+      saved.fontPairs[event.design.fontPairIndex ?? 0] ?? saved.fontPairs[0]
+    return {
+      display: event.design.displayFont ?? pair.display,
+      body: event.design.bodyFont ?? pair.body,
+    }
+  })
   const [overlay, setOverlay] = useState<number | null>(
     event.design.overlay ?? null,
   )
@@ -98,17 +109,28 @@ function DesignEditor({
       setThemeKey(key)
       // Colors and font pairs belong to a theme, so start from its defaults.
       setAccent(null)
-      setFontPairIndex(0)
+      const next = themes.find((item) => item.key === key) ?? themes[0]
+      setFonts({ ...next.fontPairs[0] })
     })
   }
 
+  // Which of the theme's suggested pairs is in use, if any.
+  const pairIndex = theme.fontPairs.findIndex(
+    (pair) => pair.display === fonts.display && pair.body === fonts.body,
+  )
+
   function submit() {
+    const suggested = pairIndex !== -1
     save.mutate(
       {
         themeKey,
         // null means "use the theme's own".
         accent: accent === theme.palette.accent ? null : accent,
-        fontPairIndex: fontPairIndex === 0 ? null : fontPairIndex,
+        // A suggested pair is saved by its place in the theme's list; fonts
+        // mixed by hand are saved by name.
+        fontPairIndex: suggested && pairIndex !== 0 ? pairIndex : null,
+        displayFont: suggested ? null : fonts.display,
+        bodyFont: suggested ? null : fonts.body,
         overlay,
       },
       { onSuccess: () => setJustSaved(true) },
@@ -124,7 +146,12 @@ function DesignEditor({
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      {/* `data-wide` lets this tab use the whole window, like the Invitation
+          tab: the choices keep a reading width, the preview takes the rest. */}
+      <div
+        data-wide
+        className="grid items-start gap-8 lg:grid-cols-[minmax(0,36rem)_minmax(0,1fr)] xl:gap-12"
+      >
         <form
           onSubmit={(formEvent) => {
             formEvent.preventDefault()
@@ -212,14 +239,15 @@ function DesignEditor({
 
           <fieldset>
             <legend className={LEGEND}>Fonts</legend>
+            <p className="mb-3 text-host-ink-soft">Suggested for this theme</p>
             <div className="flex flex-col gap-3">
               {theme.fontPairs.map((pair, index) => (
                 <label key={pair.display + pair.body} className={CHOICE}>
                   <input
                     type="radio"
                     name="fonts"
-                    checked={index === fontPairIndex}
-                    onChange={() => change(() => setFontPairIndex(index))}
+                    checked={index === pairIndex}
+                    onChange={() => change(() => setFonts({ ...pair }))}
                     className="sr-only"
                   />
                   <span className="flex flex-col">
@@ -238,6 +266,70 @@ function DesignEditor({
                   </span>
                 </label>
               ))}
+            </div>
+
+            <p className="mt-6 mb-3 text-host-ink-soft">
+              Or mix your own from {DISPLAY_FONTS.length} heading fonts and{' '}
+              {BODY_FONTS.length} text fonts
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="display-font" className={LABEL}>
+                  Heading font
+                </label>
+                <select
+                  id="display-font"
+                  value={fonts.display}
+                  onChange={(event) =>
+                    change(() =>
+                      setFonts({ ...fonts, display: event.target.value }),
+                    )
+                  }
+                  className={SELECT}
+                >
+                  {DISPLAY_FONTS.map((font) => (
+                    <option key={font} value={font}>
+                      {font}
+                    </option>
+                  ))}
+                </select>
+                {/* A sample, since a dropdown cannot show each font itself. */}
+                <p
+                  aria-hidden="true"
+                  className="text-3xl leading-tight break-words"
+                  style={{ fontFamily: fontFamily(fonts.display) }}
+                >
+                  {event.title}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="body-font" className={LABEL}>
+                  Text font
+                </label>
+                <select
+                  id="body-font"
+                  value={fonts.body}
+                  onChange={(event) =>
+                    change(() =>
+                      setFonts({ ...fonts, body: event.target.value }),
+                    )
+                  }
+                  className={SELECT}
+                >
+                  {BODY_FONTS.map((font) => (
+                    <option key={font} value={font}>
+                      {font}
+                    </option>
+                  ))}
+                </select>
+                <p
+                  aria-hidden="true"
+                  className="leading-normal text-host-ink-soft"
+                  style={{ fontFamily: fontFamily(fonts.body) }}
+                >
+                  We would love for you to join us on our special day.
+                </p>
+              </div>
             </div>
           </fieldset>
 
@@ -295,7 +387,7 @@ function DesignEditor({
           event={event}
           theme={theme}
           accent={accent}
-          fontPairIndex={fontPairIndex}
+          fonts={fonts}
           overlay={overlay}
         />
       </div>

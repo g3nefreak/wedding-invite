@@ -1,3 +1,4 @@
+import { isBodyFont, isDisplayFont } from '#/server/config/fonts'
 import type {
   DesignOverrides,
   ResolvedDesign,
@@ -21,7 +22,15 @@ export function resolveDesign(
 ): ResolvedDesign {
   const { fontPairs } = theme
   // An index the theme does not have falls back to its default pair.
-  const fonts = fontPairs[overrides.fontPairIndex ?? 0] ?? fontPairs[0]
+  const pair = fontPairs[overrides.fontPairIndex ?? 0] ?? fontPairs[0]
+  // A font picked on its own replaces that half of the pair. The name ends
+  // up in the page's CSS, so only names from the font library are used.
+  const { displayFont, bodyFont } = overrides
+  const fonts = {
+    display:
+      displayFont && isDisplayFont(displayFont) ? displayFont : pair.display,
+    body: bodyFont && isBodyFont(bodyFont) ? bodyFont : pair.body,
+  }
 
   // Listed one by one so `eventTypes`, `fontPairs` and `accents` stay out of
   // the result: the page needs only the choices that were made.
@@ -31,6 +40,7 @@ export function resolveDesign(
     category: theme.category,
     labelFont: theme.labelFont,
     art: theme.art,
+    envelope: theme.envelope,
     panelRadius: theme.panelRadius,
     heroAlign: theme.heroAlign,
     palette: {

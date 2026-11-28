@@ -1,4 +1,8 @@
 import type {
+  AssetRecord,
+  AssetRepository,
+} from '#/server/repositories/asset.repository'
+import type {
   EventRecord,
   EventRepository,
 } from '#/server/repositories/event.repository'
@@ -51,10 +55,13 @@ export function sampleRecords(): Record<string, InviteRecord> {
     details: { headline: 'We are getting married' },
     themeKey: 'black-and-white',
     design: {},
+    sections: [] as unknown,
+    cover: {} as unknown,
   }
 
   return {
     [T1]: {
+      sectionPhotos: [],
       guest: {
         id: 'guest-1',
         name: 'Ana Reyes',
@@ -76,6 +83,7 @@ export function sampleRecords(): Record<string, InviteRecord> {
       },
     },
     [T2]: {
+      sectionPhotos: [],
       guest: { id: 'guest-2', name: 'Bea Cruz', personalNote: null },
       role: null,
       rsvp: null,
@@ -118,6 +126,8 @@ export function fakeEventRepository(): EventRepository & {
         status: 'draft',
         details: {},
         design: {},
+        sections: [],
+        cover: {},
       }
       rows.push(row)
       return row
@@ -220,6 +230,40 @@ export function fakeGuestRepository(): GuestRepository & {
         rows.findIndex((row) => row.id === id),
         1,
       )
+    },
+  }
+}
+
+// Photo records kept in memory. Tests push rows in directly when they need
+// a photo that already exists.
+export function fakeAssetRepository(): AssetRepository & {
+  rows: AssetRecord[]
+} {
+  const rows: AssetRecord[] = []
+  let next = 1
+
+  return {
+    rows,
+    async create(data) {
+      const row = { ...data, id: `asset-${next++}` }
+      rows.push(row)
+      return row
+    },
+    async findById(id) {
+      return rows.find((row) => row.id === id) ?? null
+    },
+    async delete(id) {
+      rows.splice(
+        rows.findIndex((row) => row.id === id),
+        1,
+      )
+    },
+    async listByEvent(eventId, kind) {
+      return rows.filter((row) => row.eventId === eventId && row.kind === kind)
+    },
+    async countByEvent(eventId, kind) {
+      return rows.filter((row) => row.eventId === eventId && row.kind === kind)
+        .length
     },
   }
 }

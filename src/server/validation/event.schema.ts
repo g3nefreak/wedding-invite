@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { EVENT_TYPE_KEYS } from '#/server/config/event-types'
 
 // A calendar day written as YYYY-MM-DD, which is what a date input sends.
 const day = z.iso.date('Enter a date')
@@ -23,7 +24,7 @@ export const REPLY_BY_MESSAGE =
 
 export const createEventSchema = z
   .strictObject({
-    type: z.enum(['wedding']),
+    type: z.enum(EVENT_TYPE_KEYS),
     title,
     eventDate: day,
     replyBy: day,

@@ -3,7 +3,7 @@ import { db } from '#/server/db'
 export type AssetRecord = {
   id: string
   eventId: string
-  kind: 'background'
+  kind: 'background' | 'section'
   path: string
   width: number
   height: number
@@ -15,6 +15,9 @@ export interface AssetRepository {
   create(data: Omit<AssetRecord, 'id'>): Promise<AssetRecord>
   findById(id: string): Promise<AssetRecord | null>
   delete(id: string): Promise<void>
+  // Every section photo of an event, oldest first.
+  listByEvent(eventId: string, kind: 'section'): Promise<AssetRecord[]>
+  countByEvent(eventId: string, kind: 'section'): Promise<number>
 }
 
 const select = {
@@ -35,6 +38,16 @@ export const prismaAssetRepository: AssetRepository = {
   async delete(id) {
     await db().asset.delete({ where: { id } })
   },
+
+  listByEvent: (eventId, kind) =>
+    db().asset.findMany({
+      where: { eventId, kind },
+      orderBy: { createdAt: 'asc' },
+      select,
+    }),
+
+  countByEvent: (eventId, kind) =>
+    db().asset.count({ where: { eventId, kind } }),
 }
 
 // The stored path of the background photo a saved design points at.
